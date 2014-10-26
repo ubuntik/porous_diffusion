@@ -3,6 +3,7 @@
  */
 
 #include <iostream>
+#include <assert.h>
 
 #include <cblas.h>
 
@@ -10,19 +11,21 @@
 
 matrix::matrix(uint n_size)
 {
+	assert(n >= 0);
 	n = n_size;
 	size = n * n * sizeof(ptype);
 	array = (ptype *)malloc(size);
 	bzero(array, size);
-	// TODO: check memory
+	assert(array != NULL);
 };
 
 matrix::matrix(uint n_size, ptype a)
 {
+	assert(n >= 0);
 	n = n_size;
 	size = n * n *sizeof(ptype);
 	array = (ptype *)malloc(size);
-	// TODO: check memory
+	assert(array != NULL);
 
 	for (int j = 0; j < n; j++)
 		for (int i = 0; i < n; i++)
@@ -47,6 +50,7 @@ void matrix::print()
 
 matrix matrix::operator*(const matrix &b)
 {
+	assert(n == b.n);
 	matrix c(n);
 	for (int j = 0; j < n; j++) {
 		for (int i = 0; i < n; i++) {
@@ -60,6 +64,7 @@ matrix matrix::operator*(const matrix &b)
 
 vector matrix::operator*(const vector &b)
 {
+	assert(n == b.n);
 	vector c(n);
 	for (int j = 0; j < n; j++) {
 		for (int i = 0; i < n; i++) {
@@ -82,6 +87,7 @@ matrix matrix::operator*(const ptype b)
 
 matrix matrix::operator+(const matrix &b)
 {
+	assert(n == b.n);
 	matrix c(n);
 	for (int j = 0; j < n; j++) {
 		for (int i = 0; i < n; i++) {
@@ -93,6 +99,7 @@ matrix matrix::operator+(const matrix &b)
 
 matrix matrix::operator-(const matrix &b)
 {
+	assert(n == b.n);
 	matrix c(n);
 	for (int j = 0; j < n; j++) {
 		for (int i = 0; i < n; i++) {
@@ -104,6 +111,7 @@ matrix matrix::operator-(const matrix &b)
 
 matrix& matrix::operator=(const matrix& b)
 {
+	assert(n == b.n);
 	n = b.n;
 	size = b.size;
 	memcpy(array, b.array, size);
@@ -189,25 +197,26 @@ matrix matrix::transpose()
 matrix matrix::inverse()
 {
 	ptype idet = 1.0 / det();
-	std::cout << "det = " << det() << "; 1/det = " << idet << std::endl;
 	return coFactor().transpose() * idet;
 };
 
 vector::vector(uint n_size)
 {
+	assert(n >= 0);
 	n = n_size;
 	size = n * sizeof(ptype);
 	array = (ptype *)malloc(size);
 	bzero(array, size);
-	// TODO: check memory
+	assert(array != NULL);
 };
 
 vector::vector(uint n_size, ptype a)
 {
+	assert(n >= 0);
 	n = n_size;
 	size = n *sizeof(ptype);
 	array = (ptype *)malloc(size);
-	// TODO: check memory
+	assert(array != NULL);
 
 	for (int i = 0; i < n; i++)
 		array[i] = a;
@@ -229,6 +238,7 @@ void vector::print()
 
 vector vector::operator+(const vector &b)
 {
+	assert(n == b.n);
 	vector c(n);
 	for (int i = 0; i < n; i++) {
 		c.array[i] = array[i] + b.array[i];
@@ -238,6 +248,7 @@ vector vector::operator+(const vector &b)
 
 vector vector::operator-(const vector &b)
 {
+	assert(n == b.n);
 	vector c(n);
 	for (int i = 0; i < n; i++) {
 		c.array[i] = array[i] - b.array[i];
@@ -247,6 +258,7 @@ vector vector::operator-(const vector &b)
 
 vector& vector::operator=(const vector& b)
 {
+	assert(n == b.n);
 	n = b.n;
 	size = b.size;
 	memcpy(array, b.array, size);
