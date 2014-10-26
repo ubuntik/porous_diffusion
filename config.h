@@ -18,6 +18,9 @@
 #define t 1
 
 // types
+typedef unsigned int uint;
+typedef double ptype;
+
 typedef double p_vector[GAMMA];
 typedef double matrix[GAMMA][GAMMA];
 
