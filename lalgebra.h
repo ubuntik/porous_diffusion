@@ -1,8 +1,8 @@
 /*
  * DECLARATION
  */
-
-#include <iostream>
+#ifndef _SLB_LALGEBRA_LIB
+#define _SLB_LALGEBRA_LIB
 
 // types
 typedef unsigned int uint;
@@ -14,6 +14,7 @@ class vector
 {
 friend class matrix;
 public:
+	vector();
 	vector(uint n_size);
 	vector(uint n_size, ptype a);
 	~vector();
@@ -23,16 +24,18 @@ public:
 	vector operator*(const ptype b);
 	vector& operator=(const vector& b);
 	void print();
+	uint size() { return n; };
 private:
 	ptype *array;
 	uint n;
-	uint size;
+	uint size_in_bytes;
 };
 
 class matrix
 {
 friend class vector;
 public:
+	matrix();
 	matrix(uint n_size);
 	matrix(uint n_size, ptype a);
 	~matrix();
@@ -48,9 +51,12 @@ public:
 	matrix transpose();
 	matrix inverse();
 	void print();
+	uint size() { return n; };
 
 private:
 	ptype *array;
 	uint n;
-	uint size;
+	uint size_in_bytes;
 };
+
+#endif //_SLB_LALGEBRA_LIB

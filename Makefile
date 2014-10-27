@@ -7,7 +7,7 @@ CFLAGS = -I${BLAS} -L${BLAS} -lopenblas
 all: main
 
 main:
-	$(CP) $(CFLAGS) main.cpp -o main
+	$(CP) $(CFLAGS) lalgebra.cpp main.cpp -o main
 
 clean:
 	rm -rf main

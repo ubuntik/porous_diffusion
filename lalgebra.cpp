@@ -2,29 +2,35 @@
  * DECLARATION
  */
 
-#include <iostream>
 #include <assert.h>
-
-#include <cblas.h>
+#include <iostream>
+#include <math.h>
 
 #include "lalgebra.h"
 
+matrix::matrix()
+{
+	n = 0;
+	size_in_bytes = 0;
+	array = NULL;
+};
+
 matrix::matrix(uint n_size)
 {
-	assert(n >= 0);
 	n = n_size;
-	size = n * n * sizeof(ptype);
-	array = (ptype *)malloc(size);
-	bzero(array, size);
+	assert(n >= 0);
+	size_in_bytes = n * n * sizeof(ptype);
+	array = (ptype *)malloc(size_in_bytes);
+	bzero(array, size_in_bytes);
 	assert(array != NULL);
 };
 
 matrix::matrix(uint n_size, ptype a)
 {
-	assert(n >= 0);
 	n = n_size;
-	size = n * n *sizeof(ptype);
-	array = (ptype *)malloc(size);
+	assert(n >= 0);
+	size_in_bytes = n * n *sizeof(ptype);
+	array = (ptype *)malloc(size_in_bytes);
 	assert(array != NULL);
 
 	for (int j = 0; j < n; j++)
@@ -113,8 +119,8 @@ matrix& matrix::operator=(const matrix& b)
 {
 	assert(n == b.n);
 	n = b.n;
-	size = b.size;
-	memcpy(array, b.array, size);
+	size_in_bytes = b.size_in_bytes;
+	memcpy(array, b.array, size_in_bytes);
 	return *this;
 };
 
@@ -200,22 +206,29 @@ matrix matrix::inverse()
 	return coFactor().transpose() * idet;
 };
 
+vector::vector()
+{
+	n = 0;
+	size_in_bytes = 0;
+	array = NULL;
+};
+
 vector::vector(uint n_size)
 {
-	assert(n >= 0);
 	n = n_size;
-	size = n * sizeof(ptype);
-	array = (ptype *)malloc(size);
-	bzero(array, size);
+	assert(n >= 0);
+	size_in_bytes = n * sizeof(ptype);
+	array = (ptype *)malloc(size_in_bytes);
+	bzero(array, size_in_bytes);
 	assert(array != NULL);
 };
 
 vector::vector(uint n_size, ptype a)
 {
-	assert(n >= 0);
 	n = n_size;
-	size = n *sizeof(ptype);
-	array = (ptype *)malloc(size);
+	assert(n >= 0);
+	size_in_bytes = n * sizeof(ptype);
+	array = (ptype *)malloc(size_in_bytes);
 	assert(array != NULL);
 
 	for (int i = 0; i < n; i++)
@@ -260,8 +273,8 @@ vector& vector::operator=(const vector& b)
 {
 	assert(n == b.n);
 	n = b.n;
-	size = b.size;
-	memcpy(array, b.array, size);
+	size_in_bytes = b.size_in_bytes;
+	memcpy(array, b.array, size_in_bytes);
 	return *this;
 };
 
@@ -274,20 +287,3 @@ vector vector::operator*(const ptype b)
 	return c;
 };
 
-#if 0
-void start_cond(p_vector *u)
-{
-	// left edge
-	for (int j = 0; j < GAMMA; j++)
-		u[0][j] = 0;
-
-	for (int i = 1; i < (L - 1); i++) {
-		for (int j = 0; j < GAMMA; j++)
-			u[i][j] = 0;
-	}
-
-	// right edge
-	for (int j = 0; j < GAMMA; j++)
-		u[L - 1][j] = 1;
-}
-#endif
