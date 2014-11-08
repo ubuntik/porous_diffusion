@@ -38,6 +38,33 @@ matrix::matrix(uint n_size, ptype a)
 			array[j * n + i] = (i == j) ? a : 0.0;
 };
 
+void matrix::init(uint n_size)
+{
+	n = n_size;
+	assert(n >= 0);
+	size_in_bytes = n * n * sizeof(ptype);
+	if (array)
+		free(array);
+	array = (ptype *)malloc(size_in_bytes);
+	bzero(array, size_in_bytes);
+	assert(array != NULL);
+};
+
+void matrix::init(uint n_size, ptype a)
+{
+	n = n_size;
+	assert(n >= 0);
+	size_in_bytes = n * n *sizeof(ptype);
+	if (array)
+		free(array);
+	array = (ptype *)malloc(size_in_bytes);
+	assert(array != NULL);
+
+	for (int j = 0; j < n; j++)
+		for (int i = 0; i < n; i++)
+			array[j * n + i] = (i == j) ? a : 0.0;
+};
+
 matrix::~matrix()
 {
 //	if (array)
@@ -228,6 +255,33 @@ vector::vector(uint n_size, ptype a)
 	n = n_size;
 	assert(n >= 0);
 	size_in_bytes = n * sizeof(ptype);
+	array = (ptype *)malloc(size_in_bytes);
+	assert(array != NULL);
+
+	for (int i = 0; i < n; i++)
+		array[i] = a;
+};
+
+
+void vector::init(uint n_size)
+{
+	n = n_size;
+	assert(n >= 0);
+	size_in_bytes = n * sizeof(ptype);
+	if (array)
+		free(array);
+	array = (ptype *)malloc(size_in_bytes);
+	bzero(array, size_in_bytes);
+	assert(array != NULL);
+};
+
+void vector::init(uint n_size, ptype a)
+{
+	n = n_size;
+	assert(n >= 0);
+	size_in_bytes = n * sizeof(ptype);
+	if (array)
+		free(array);
 	array = (ptype *)malloc(size_in_bytes);
 	assert(array != NULL);
 

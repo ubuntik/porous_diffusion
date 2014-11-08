@@ -54,9 +54,17 @@ void progonka::calculate(const std::vector<vector>& u, std::vector<vector>& u1)
 
 	/* coefficients */
 	/* progonka coeffs start cond */
-	std::vector<matrix> Ps(L, matrix(n, 1));
-	std::vector<vector> Qs(L, vector(n));
+	std::vector<matrix> Ps(L);
+	std::vector<vector> Qs(L);
 	matrix G(n);
+
+	/* due to the specific realization of std containers */
+//	for (std::vector<vector>::iterator it = Ps.begin(); it != Ps.end(); ++it) {
+	for (int i = 0; i < L; i++) {
+		Ps[i].init(n, 1);
+		Qs[i].init(n);
+	}
+
 
 	/* edge conditions */
 	edge_conditions(u, u1);
@@ -67,11 +75,14 @@ void progonka::calculate(const std::vector<vector>& u, std::vector<vector>& u1)
 		G = ((*A * Ps[i - 1]) + *B).inverse();
 		Ps[i] = (G * (*C)) * (-1);
 		Qs[i] = G * (Fi - (*A * Qs[i - 1]));
+		Ps[i].print();
+		Qs[i].print();
 	}
 
 	/* and Back Again */
 	for (int i = L - 2; i >= 0; i--) {
 		u1[i] = (Ps[i] * u1[i + 1]) + Qs[i];
+		u1[i].print();
 	}
 }
 

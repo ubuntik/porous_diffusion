@@ -17,6 +17,8 @@ public:
 	vector();
 	vector(uint n_size);
 	vector(uint n_size, ptype a);
+	void init(uint n_size);
+	void init(uint n_size, ptype a);
 	~vector();
 	ptype& operator()(int i) const { return array[i]; };
 	vector operator+(const vector &b);
@@ -38,6 +40,8 @@ public:
 	matrix();
 	matrix(uint n_size);
 	matrix(uint n_size, ptype a);
+	void init(uint n_size);
+	void init(uint n_size, ptype a);
 	~matrix();
 	ptype& operator()(int i, int j) const { return array[j * n + i]; };
 	matrix operator*(const matrix &b);

@@ -52,18 +52,23 @@ int main(int argc, char **argv)
 
 	progonka method(n);
 
-	std::vector<vector> u(L, vector(n));
-	std::vector<vector> u1(L, vector(n));
+	std::vector<vector> u(L);
+	std::vector<vector> u1(L);
+
+	/* due to the specific realization of std containers */
+	for (int i = 0; i < L; i++) {
+		u[i].init(n);
+		u1[i].init(n);
+	}
 
 	start_cond(u);
 
-	for (int i = 0; i < L; i++) {
-		std::cout << "START " << u[i](0) << " ";
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < L; j++) {
+			std::cout << u[j](i) << " ";
+		}
+		std::cout << std::endl;
 	}
-	std::cout << std::endl;
-
-	u[0].print();
-	u[L - 1].print();
 
 	for (int i = 0; i < TIME; i++) {
 		method.calculate(u, u1);
@@ -71,13 +76,16 @@ int main(int argc, char **argv)
 			sprintf(buf, "res/data_%06d.vtk", i);
 			write_to_vtk2(u1, buf, n);
 		}
-
-		for (int i = 0; i < L; i++) {
-			std::cout << u[0](i) << " ";
-		}
-		std::cout << std::endl;
-
 		u = u1;
+
+		for (int i = 0; i < n; i++) {
+			for (int j = 0; j < L; j++) {
+				std::cout << u[j](i) << " ";
+			}
+			std::cout << std::endl;
+
+	}
+
 	}
 	return 0;
 }

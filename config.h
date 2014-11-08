@@ -9,13 +9,13 @@
 // Number of porosity levels
 #define GAMMA 1
 // Length of considerable sample (1 meter)
-#define LENGTH 15
+#define LENGTH 3
 // Step by space
 #define h 1
 // Number of steps by space
 #define L (LENGTH / h)
 // Considerable time
-#define TIME 10
+#define TIME 3
 // Step by time
 #define t 1
 // edge conditions
