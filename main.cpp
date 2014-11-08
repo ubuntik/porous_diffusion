@@ -6,12 +6,14 @@
 
 #include "config.h"
 
+#define PRNT 2
+
 void start_cond(std::vector<vector>& u)
 {
 	uint n = u[0].size();
 	for (int i = 0; i < n; i++) {
-		u[0](i) = P_LEFT;
-		u[N - 1](i) = P_RIGHT;
+		u.at(0)(i) = P_LEFT;
+		u.at(L - 1)(i) = P_RIGHT;
 	}
 };
 
@@ -26,15 +28,15 @@ void write_to_vtk2(std::vector<vector>& u, const char *path, uint n)
 	fprintf(f, "Created by write_to_vtk2\n");
 	fprintf(f, "ASCII\n");
 	fprintf(f, "DATASET STRUCTURED_POINTS\n");
-	fprintf(f, "DIMENSIONS %d 1 1\n", N);
+	fprintf(f, "DIMENSIONS %d 1 1\n", L);
 	fprintf(f, "SPACING %g 0.0 0.0\n", (double)h);
 	fprintf(f, "ORIGIN 0 0.0 0.0\n");
-	fprintf(f, "POINT_DATA %d\n", N);
+	fprintf(f, "POINT_DATA %d\n", L);
 
 	for (int j = 0; j < n; j++) {
 		fprintf(f, "SCALARS %s%d float 1\n", "p", j);
 		fprintf(f, "LOOKUP_TABLE %s%d_table\n", "p", j);
-		for (int i = 0; i < N; i++) {
+		for (int i = 0; i < L; i++) {
 			fprintf(f, "%f\n", u[i](j));
 		}
 	}
@@ -50,18 +52,31 @@ int main(int argc, char **argv)
 
 	progonka method(n);
 
-	std::vector<vector> u(N, vector(n));
-	std::vector<vector> u1(N, vector(n));
+	std::vector<vector> u(L, vector(n));
+	std::vector<vector> u1(L, vector(n));
 
 	start_cond(u);
 
-//	for (int i = 0; i < TIME; i++) {
-	for (int i = 0; i < 2; i++) {
+	for (int i = 0; i < L; i++) {
+		std::cout << "START " << u[i](0) << " ";
+	}
+	std::cout << std::endl;
+
+	u[0].print();
+	u[L - 1].print();
+
+	for (int i = 0; i < TIME; i++) {
 		method.calculate(u, u1);
-		if (i % 10 == 0) {
-			sprintf(buf, "data_%06d.vtk", i);
+		if (i % PRNT == 0) {
+			sprintf(buf, "res/data_%06d.vtk", i);
 			write_to_vtk2(u1, buf, n);
 		}
+
+		for (int i = 0; i < L; i++) {
+			std::cout << u[0](i) << " ";
+		}
+		std::cout << std::endl;
+
 		u = u1;
 	}
 	return 0;

@@ -7,22 +7,20 @@
 // Degree of hierarchy of porous media
 #define P 3
 // Number of porosity levels
-#define GAMMA 4
+#define GAMMA 1
 // Length of considerable sample (1 meter)
-#define LENGTH 10
+#define LENGTH 15
 // Step by space
 #define h 1
 // Number of steps by space
 #define L (LENGTH / h)
 // Considerable time
-#define TIME 1000
+#define TIME 10
 // Step by time
 #define t 1
-// matrix size N x N
-#define N 4
 // edge conditions
-#define P_LEFT 2
-#define P_RIGHT 1
+#define P_LEFT 5
+#define P_RIGHT 3
 
 
 // types

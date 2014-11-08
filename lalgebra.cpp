@@ -35,13 +35,13 @@ matrix::matrix(uint n_size, ptype a)
 
 	for (int j = 0; j < n; j++)
 		for (int i = 0; i < n; i++)
-			array[j * n + i] = (i == j) ? a : 0;
+			array[j * n + i] = (i == j) ? a : 0.0;
 };
 
 matrix::~matrix()
 {
-	if (array)
-		free(array);
+//	if (array)
+//		free(array);
 };
 
 void matrix::print()
@@ -237,8 +237,8 @@ vector::vector(uint n_size, ptype a)
 
 vector::~vector()
 {
-	if (array)
-		free(array);
+//	if (array)
+//		free(array);
 };
 
 void vector::print()

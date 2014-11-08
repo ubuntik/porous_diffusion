@@ -10,4 +10,4 @@ main:
 	$(CC) $(CFLAGS) lalgebra.cpp solvers.cpp main.cpp -o main
 
 clean:
-	rm -rf main main.dSYM
+	rm -rf main main.dSYM res/*
