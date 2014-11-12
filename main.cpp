@@ -1,12 +1,36 @@
 #include <iostream>
 #include <vector>
 
+#include <math.h>
+
 #include "lalgebra.h"
 #include "solvers.h"
 
 #include "config.h"
 
-#define PRNT 2
+#define PRNT 10
+
+ptype power(ptype base, ptype exponent)
+{
+	ptype half_pow = 0.0, int_part = 0.0;
+	ptype fr_part = modf(exponent, &int_part);
+
+	if ((fr_part != 0) && (fr_part != 0.5)) {
+		return pow(base, exponent);
+	} else if (fr_part == 0.5) {
+		return (sqrt(base) * power(base, int_part));
+	}
+
+	if (exponent == 0)
+		return (ptype)1;
+	else if (exponent < 0)
+		return (ptype)1 / power(base, -exponent);
+	else if (fmod(exponent, 2) == 0) {
+		half_pow = power(base, exponent / (ptype)2);
+		return half_pow * half_pow;
+	} else
+		return base * power(base, exponent - 1);
+};
 
 void start_cond(std::vector<vector>& u)
 {
@@ -47,7 +71,7 @@ void write_to_vtk2(std::vector<vector>& u, const char *path, uint n)
 int main(int argc, char **argv)
 {
 	// the problem size
-	uint n = GAMMA;
+	uint n = power(P, GAMMA);
 	char buf[256];
 
 	progonka method(n);
@@ -63,30 +87,16 @@ int main(int argc, char **argv)
 
 	start_cond(u);
 
-	for (int i = 0; i < n; i++) {
-		for (int j = 0; j < L; j++) {
-			std::cout << u[j](i) << " ";
-		}
-		std::cout << std::endl;
-	}
-
 	for (int i = 0; i < TIME; i++) {
-		method.calculate(u, u1);
 		if (i % PRNT == 0) {
 			sprintf(buf, "res/data_%06d.vtk", i);
-			write_to_vtk2(u1, buf, n);
+			write_to_vtk2(u, buf, n);
 		}
+
+		method.calculate(u, u1);
 		u = u1;
-
-		for (int i = 0; i < n; i++) {
-			for (int j = 0; j < L; j++) {
-				std::cout << u[j](i) << " ";
-			}
-			std::cout << std::endl;
-
 	}
-
-	}
+	std::cout << "DONE" << std::endl;
 	return 0;
 }
 

@@ -218,6 +218,9 @@ matrix matrix::coFactor()
 
 matrix matrix::transpose()
 {
+	if (n == 1) {
+		return *this;
+	}
 	matrix c(n);
 	for (int j = 0; j < n; j++) {
 		for (int i = 0; i < n; i++) {
@@ -229,6 +232,10 @@ matrix matrix::transpose()
 
 matrix matrix::inverse()
 {
+	if (n == 1) {
+		matrix c(1, 1.0/array[0]);
+		return c;
+	}
 	ptype idet = 1.0 / det();
 	return coFactor().transpose() * idet;
 };

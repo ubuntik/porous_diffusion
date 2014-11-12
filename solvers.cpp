@@ -20,7 +20,7 @@ progonka::progonka(uint n_size)
 	for (int j = 0; j < n; j++) {
 		for (int i = 0; i < n; i++) {
 			K_ini(i, j) = (i == j) ? 0.1 : 0.001;
-			D_ini(i, j) = (i == j) ? 1 : P;
+			D_ini(i, j) = (i == j) ? 0 : P;
 		}
 	}
 	*A = K_ini * (-1.0 / h / h);
@@ -73,16 +73,14 @@ void progonka::calculate(const std::vector<vector>& u, std::vector<vector>& u1)
 	for (int i = 1; i < L; i++) {
 		Fi = (*A_ini) * u[i];
 		G = ((*A * Ps[i - 1]) + *B).inverse();
+
 		Ps[i] = (G * (*C)) * (-1);
 		Qs[i] = G * (Fi - (*A * Qs[i - 1]));
-		Ps[i].print();
-		Qs[i].print();
 	}
 
 	/* and Back Again */
 	for (int i = L - 2; i >= 0; i--) {
 		u1[i] = (Ps[i] * u1[i + 1]) + Qs[i];
-		u1[i].print();
 	}
 }
 

@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "lalgebra.h"
 
 int main()
