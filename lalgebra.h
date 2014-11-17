@@ -1,6 +1,12 @@
 /*
- * DECLARATION
+ * @file lalgebra.h
+ *
+ * @brief header of library with main linear algebra operations
+ *
+ * @author Anna Subbotina
+ *
  */
+
 #ifndef _SLB_LALGEBRA_LIB
 #define _SLB_LALGEBRA_LIB
 

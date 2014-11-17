@@ -1,5 +1,10 @@
 /*
- * DECLARATION
+ * @file solvers.h
+ *
+ * @brief header of tompson's method of numerical solution
+ *
+ * @author Anna Subbotina
+ *
  */
 
 #ifndef _SLB_SOLVERS_LIB

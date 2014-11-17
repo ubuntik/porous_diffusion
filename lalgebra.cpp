@@ -1,5 +1,8 @@
 /*
- * DECLARATION
+ * @file lalgebra.cpp
+ *
+ * @author Anna Subbotina
+ *
  */
 
 #include <assert.h>

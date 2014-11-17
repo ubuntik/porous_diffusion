@@ -1,3 +1,10 @@
+/*
+ * @file main.cpp
+ *
+ * @author Anna Subbotina
+ *
+ */
+
 #include <iostream>
 #include <vector>
 
@@ -71,7 +78,7 @@ void write_to_vtk2(std::vector<vector>& u, const char *path, uint n)
 int main(int argc, char **argv)
 {
 	// the problem size
-	uint n = power(P, GAMMA);
+	uint n = power(P, GAMMA - 1);
 	char buf[256];
 
 	progonka method(n);
@@ -87,7 +94,7 @@ int main(int argc, char **argv)
 
 	start_cond(u);
 
-	for (int i = 0; i < TIME; i++) {
+	for (int i = 0; i < ((double)TIME / t); i++) {
 		if (i % PRNT == 0) {
 			sprintf(buf, "res/data_%06d.vtk", i);
 			write_to_vtk2(u, buf, n);
