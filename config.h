@@ -11,9 +11,9 @@
 #define _SLB_CONFIG_LIB
 
 // Degree of hierarchy of porous media
-#define P 3
+#define P 2
 // Number of porosity levels
-#define GAMMA 2
+#define GAMMA 3
 // Length of considerable sample (1 meter)
 #define LENGTH 100
 // Step by space
@@ -23,13 +23,13 @@
 // Considerable time
 #define TIME 2000
 // Step by time
-#define t 0.1
+#define t 1
 // edge conditions
-#define P_LEFT 0
+#define P_LEFT 2
 #define P_RIGHT 1
 
 #define K_DIAG 1
-#define K_ELEM 0.1
+#define K_ELEM 0
 
 // types
 typedef unsigned int uint;

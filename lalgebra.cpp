@@ -11,6 +11,28 @@
 
 #include "lalgebra.h"
 
+ptype power(ptype base, ptype exponent)
+{
+	ptype half_pow = 0.0, int_part = 0.0;
+	ptype fr_part = modf(exponent, &int_part);
+
+	if ((fr_part != 0) && (fr_part != 0.5)) {
+		return pow(base, exponent);
+	} else if (fr_part == 0.5) {
+		return (sqrt(base) * power(base, int_part));
+	}
+
+	if (exponent == 0)
+		return (ptype)1;
+	else if (exponent < 0)
+		return (ptype)1 / power(base, -exponent);
+	else if (fmod(exponent, 2) == 0) {
+		half_pow = power(base, exponent / (ptype)2);
+		return half_pow * half_pow;
+	} else
+		return base * power(base, exponent - 1);
+};
+
 matrix::matrix()
 {
 	n = 0;

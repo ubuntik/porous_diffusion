@@ -8,16 +8,27 @@
 #include <assert.h>
 #include <iostream>
 #include <vector>
+#include <math.h>
 
 #include "lalgebra.h"
 #include "solvers.h"
+
+int p_norm(ptype num)
+{
+	int cnt = 0;
+	while((num / P) > 1) {
+		num /= P;
+		cnt++;
+	}
+	return cnt;
+};
 
 progonka::progonka(uint n_size)
 {
 	n = n_size;
 	assert(n >= 0);
 
-	A_ini = new matrix(n, 1.0 / t);
+	A_ini = new matrix(n, 1.0);
 	A = new matrix(n);
 	B = new matrix(n);
 	C = new matrix(n);
@@ -28,10 +39,24 @@ progonka::progonka(uint n_size)
 		for (int i = 0; i < n; i++) {
 			K_ini(i, j) = (i == j) ? K_DIAG : K_ELEM;
 			D_ini(i, j) = 0;
+
+			/* for start conditions != 0
+			 * It must decrease exponentially
+			 */
+//			D_ini(i, j) = (i == j) ? K_DIAG : K_ELEM;
+//			K_ini(i, j) = 0;
 		}
 	}
+
+	std::cout << "Initian matrix (A, K, D):" << std::endl;
+	(*A_ini).print();
+	std::cout << "******************" << std::endl;
+	K_ini.print();
+	std::cout << "******************" << std::endl;
+	D_ini.print();
+
 	*A = K_ini * (-1.0 / h / h);
-	*B = (*A_ini) + K_ini * (2.0 / h / h) + D_ini;
+	*B = ((*A_ini) * (1.0 / t)) + K_ini * (2.0 / h / h) + D_ini;
 	*C = K_ini * (-1.0 / h / h);
 };
 
@@ -43,11 +68,13 @@ progonka::~progonka()
 	delete C;
 };
 
+
 void progonka::edge_conditions(const std::vector<vector>& u, std::vector<vector>& u1)
 {
 	u1[0] = u[0];
 	u1[L - 1] = u[L - 1];
 };
+
 
 void progonka::calculate(const std::vector<vector>& u, std::vector<vector>& u1)
 {
@@ -72,28 +99,39 @@ void progonka::calculate(const std::vector<vector>& u, std::vector<vector>& u1)
 	}
 
 	/* progonka coeffs start cond */
-	Fi = (*A_ini) * u[0];
+
+/*
+ * Something wrong, this gets left edge falling to null
+ * But this is done according to prof. Lobanov book
+ *
+	Fi = ((*A_ini) * (1.0 / t)) * u[0];
 	Ps[0] = ((*B).inverse() * (*C)) * (-1);
 	Qs[0] = (*B).inverse() * Fi;
+
+*/
+
+	Ps[0].init(n);
+	Qs[0].init(n, P_LEFT);
 
 	/* edge conditions */
 	edge_conditions(u, u1);
 
 	/* There */
 	for (int i = 1; i < L - 1; i++) {
-		Fi = (*A_ini) * u[i];
+		Fi = ((*A_ini) * (1.0 / t)) * u[i];
 		G = ((*A * Ps[i - 1]) + *B).inverse();
 
 		Ps[i] = (G * (*C)) * (-1);
 		Qs[i] = G * (Fi - (*A * Qs[i - 1]));
 	}
 
-	u1[L - 2] = Qs[L - 2];
+// I don't remember why this is here
+//	u1[L - 2] = Qs[L - 2];
+
 
 	/* and Back Again */
-	for (int i = L - 2; i > 0; i--) {
+	for (int i = L - 2; i >= 0; i--) {
 		u1[i] = (Ps[i] * u1[i + 1]) + Qs[i];
 	}
 }
-
 

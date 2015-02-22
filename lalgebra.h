@@ -14,6 +14,8 @@
 typedef unsigned int uint;
 typedef double ptype;
 
+ptype power(ptype base, ptype exponent);
+
 class matrix;
 
 class vector
