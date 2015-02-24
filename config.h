@@ -21,9 +21,9 @@
 // Number of steps by space
 #define L (LENGTH / h)
 // Considerable time
-#define TIME 2000
+#define TIME 100
 // Step by time
-#define t 1
+#define t 0.1
 // edge conditions
 #define P_LEFT 2
 #define P_RIGHT 1

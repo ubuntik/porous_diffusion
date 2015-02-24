@@ -38,7 +38,7 @@ progonka::progonka(uint n_size)
 	for (int j = 0; j < n; j++) {
 		for (int i = 0; i < n; i++) {
 			K_ini(i, j) = (i == j) ? K_DIAG : K_ELEM;
-			D_ini(i, j) = 0;
+			D_ini(i, j) = (i == j) ? 1 : 0;
 
 			/* for start conditions != 0
 			 * It must decrease exponentially
