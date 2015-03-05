@@ -7,9 +7,18 @@
 
 #include <assert.h>
 #include <iostream>
+#include <cstdio>
 #include <math.h>
 
 #include "lalgebra.h"
+
+extern "C" {
+	// LU decomoposition of a general matrix
+	void dgetrf_(int* M, int *N, double* A, int* lda, int* IPIV, int* INFO);
+
+	// generate inverse of a matrix given its LU decomposition
+	void dgetri_(int* N, double* A, int* lda, int* IPIV, double* WORK, int* lwork, int* INFO);
+}
 
 ptype power(ptype base, ptype exponent)
 {
@@ -92,8 +101,8 @@ void matrix::init(uint n_size, ptype a)
 
 matrix::~matrix()
 {
-//	if (array)
-//		free(array);
+	if (array)
+		free(array);
 };
 
 void matrix::print()
@@ -227,18 +236,19 @@ void __gen_adj_matrix(matrix& c, const matrix& a,
 
 matrix matrix::coFactor()
 {
-	matrix b(n);
-	matrix c(n - 1);
+	matrix *b = new matrix(n);
+	matrix *c = new matrix(n - 1);
 	ptype det;
 
 	for (int j = 0; j < n; j++) {
 		for (int i = 0; i < n; i++) {
-			__gen_adj_matrix(c, *this, i, j, n);
-			det = c.det();
-			b(j, i) = pow(-1.0, i + j + 2.0) * det;
+			__gen_adj_matrix(*c, *this, i, j, n);
+			det = (*c).det();
+			(*b)(j, i) = pow(-1.0, i + j + 2.0) * det;
 		}
 	}
-	return b;
+	delete c;
+	return *b;
 }
 
 matrix matrix::transpose()
@@ -246,23 +256,41 @@ matrix matrix::transpose()
 	if (n == 1) {
 		return *this;
 	}
-	matrix c(n);
+	matrix *c = new matrix(n);
 	for (int j = 0; j < n; j++) {
 		for (int i = 0; i < n; i++) {
-			c(i, j) = array[i * n + j];
+			(*c)(i, j) = array[i * n + j];
 		}
 	}
-	return c;
+	return *c;
 };
+
+static void ll_inverse(double* A, int N)
+{
+	int *IPIV = new int[N+1];
+	int LWORK = N*N;
+	double *WORK = new double[LWORK];
+	int INFO;
+
+	dgetrf_(&N,&N,A,&N,IPIV,&INFO);
+	dgetri_(&N,A,&N,IPIV,WORK,&LWORK,&INFO);
+
+	delete IPIV;
+	delete WORK;
+}
 
 matrix matrix::inverse()
 {
 	if (n == 1) {
-		matrix c(1, 1.0/array[0]);
-		return c;
+		matrix *c = new matrix(1, 1.0/array[0]);
+		return *c;
 	}
-	ptype idet = 1.0 / det();
-	return coFactor().transpose() * idet;
+
+	matrix *c = new matrix(n);
+	memcpy((*c).array, array, size_in_bytes);
+	ll_inverse((*c).array, (*c).n);
+
+	return *c;
 };
 
 vector::vector()
@@ -323,8 +351,8 @@ void vector::init(uint n_size, ptype a)
 
 vector::~vector()
 {
-//	if (array)
-//		free(array);
+	if (array)
+		free(array);
 };
 
 void vector::print()

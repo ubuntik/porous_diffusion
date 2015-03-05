@@ -73,18 +73,28 @@ int main()
 	x.coFactor().print();
 	std::cout << std::endl;
 
+	matrix y(3);
+	y(0,0) = 1; y(1,0) = 2; y(2,0) = 3;
+	y(0,1) = 3; y(1,1) = 2; y(2,1) = 1;
+	y(0,2) = 2; y(1,2) = 1; y(2,2) = 3;
+
 	std::cout << "*|1 2 3| = transpose = |1 3 2|****" << std::endl;
 	std::cout << "*|3 2 1| = transpose = |2 2 1|****" << std::endl;
 	std::cout << "*|2 1 3| = transpose = |3 1 3|****" << std::endl;
 
-	x.transpose().print();
+	y.transpose().print();
 	std::cout << std::endl;
+
+	matrix z(3);
+	z(0,0) = 1; z(1,0) = 2; z(2,0) = 3;
+	z(0,1) = 3; z(1,1) = 2; z(2,1) = 1;
+	z(0,2) = 2; z(1,2) = 1; z(2,2) = 3;
 
 	std::cout << "*|1 2 3| = inverse = |-0.41(6) 0.25 0.(3)|****" << std::endl;
 	std::cout << "*|3 2 1| = inverse = |0.58(3) 0.25 -0.(6)|****" << std::endl;
 	std::cout << "*|2 1 3| = inverse = |0.08(3) -0.25 0.(3)|****" << std::endl;
 
-	x.inverse().print();
+	z.inverse().print();
 	std::cout << std::endl;
 
 	return 0;

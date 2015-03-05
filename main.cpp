@@ -17,7 +17,7 @@
 #include "config.h"
 
 #define START 1
-#define PRNT 1
+#define PRNT 10
 
 std::vector<ptype> acc(L);
 
@@ -67,10 +67,10 @@ void write_to_vtk1(std::vector<vector>& u, const char *path, uint n)
 	fprintf(f, "Created by write_to_vtk1\n");
 	fprintf(f, "ASCII\n");
 	fprintf(f, "DATASET STRUCTURED_POINTS\n");
-	fprintf(f, "DIMENSIONS %d 1 1\n", L);
+	fprintf(f, "DIMENSIONS %g 1 1\n", L);
 	fprintf(f, "SPACING %g 0.0 0.0\n", (double)h);
 	fprintf(f, "ORIGIN 0 0.0 0.0\n");
-	fprintf(f, "POINT_DATA %d\n", L);
+	fprintf(f, "POINT_DATA %g\n", L);
 
 	for (int j = 0; j < n; j++) {
 		fprintf(f, "SCALARS %s%d float 1\n", "p", j);
@@ -93,10 +93,10 @@ void write_to_vtk2(std::vector<vector>& u, const char *path, uint n, double crt_
 	fprintf(f, "Created by write_to_vtk2\n");
 	fprintf(f, "ASCII\n");
 	fprintf(f, "DATASET STRUCTURED_POINTS\n");
-	fprintf(f, "DIMENSIONS %d 1 1\n", L);
+	fprintf(f, "DIMENSIONS %g 1 1\n", L);
 	fprintf(f, "SPACING %g 0.0 0.0\n", (double)h);
 	fprintf(f, "ORIGIN 0 0.0 0.0\n");
-	fprintf(f, "POINT_DATA %d\n", L);
+	fprintf(f, "POINT_DATA %g\n", L);
 
 	for (int j = 0; j < n; j++) {
 		fprintf(f, "SCALARS %s%d float 1\n", "p", j);
@@ -198,7 +198,7 @@ void simple_ODE(uint n, std::vector<vector>& u, std::vector<vector>& u1)
 void direct_problem(uint n, std::vector<vector>& u, std::vector<vector>& u1)
 {
 	char buf[256];
-	start_cond_1(u);
+	start_cond(u);
 
 	progonka method(n);
 
