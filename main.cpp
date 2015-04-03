@@ -67,10 +67,10 @@ void write_to_vtk1(std::vector<vector>& u, const char *path, uint n)
 	fprintf(f, "Created by write_to_vtk1\n");
 	fprintf(f, "ASCII\n");
 	fprintf(f, "DATASET STRUCTURED_POINTS\n");
-	fprintf(f, "DIMENSIONS %g 1 1\n", L);
+	fprintf(f, "DIMENSIONS %g 1 1\n", (double)L);
 	fprintf(f, "SPACING %g 0.0 0.0\n", (double)h);
 	fprintf(f, "ORIGIN 0 0.0 0.0\n");
-	fprintf(f, "POINT_DATA %g\n", L);
+	fprintf(f, "POINT_DATA %g\n", (double)L);
 
 	for (int j = 0; j < n; j++) {
 		fprintf(f, "SCALARS %s%d float 1\n", "p", j);
@@ -93,10 +93,10 @@ void write_to_vtk2(std::vector<vector>& u, const char *path, uint n, double crt_
 	fprintf(f, "Created by write_to_vtk2\n");
 	fprintf(f, "ASCII\n");
 	fprintf(f, "DATASET STRUCTURED_POINTS\n");
-	fprintf(f, "DIMENSIONS %g 1 1\n", L);
+	fprintf(f, "DIMENSIONS %g 1 1\n", (double)L);
 	fprintf(f, "SPACING %g 0.0 0.0\n", (double)h);
 	fprintf(f, "ORIGIN 0 0.0 0.0\n");
-	fprintf(f, "POINT_DATA %g\n", L);
+	fprintf(f, "POINT_DATA %g\n", (double)L);
 
 	for (int j = 0; j < n; j++) {
 		fprintf(f, "SCALARS %s%d float 1\n", "p", j);
@@ -233,8 +233,8 @@ int main(int argc, char **argv)
 	std::cout << "The length = " << L << ", the time = " << TIME << std::endl;
 	std::cout << "Space step = " << h << ", time step = " << t << std::endl;
 
-	direct_problem(n, u, u1);
-//	simple_ODE(n, u, u1);
+//	direct_problem(n, u, u1);
+	simple_ODE(n, u, u1);
 //	compare_accurate(n, u, u1);
 
 	std::cout << "DONE" << std::endl;
