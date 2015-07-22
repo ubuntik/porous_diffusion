@@ -15,21 +15,31 @@
 // Number of porosity levels
 #define GAMMA 4
 // Length of considerable sample (1 meter)
-#define LENGTH 5000
+#define LENGTH 500
 // Step by space
 #define h 1
 // Number of steps by space
 #define L (LENGTH / h)
 // Considerable time
-#define TIME 3000
+#define TIME 300
 // Step by time
 #define t 0.1
+// coefficient for tracer calculation (0 <= THETA <= 1)
+#define THETA 0.5
+// curant
+#define CURANT 0.00001
+// v = - (K / eta)(dP/dx)
+#define ETA 1
+
 // edge conditions
 #define P_LEFT 1
 #define P_RIGHT 0
 
 #define K_DIAG 1
 #define K_ELEM 0
+
+#define MAX(x, y) (((x) > (y)) ? (x) : (y))
+#define MIN(x, y) (((x) < (y)) ? (x) : (y))
 
 // types
 typedef unsigned int uint;

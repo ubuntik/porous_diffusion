@@ -140,6 +140,19 @@ void write_to_vtk3(std::vector< std::vector<vector> >& u, const char *path, uint
 	fclose(f);
 }
 
+void write_to_vtk_2d(	std::vector<vector>& p,
+			std::vector<vector>& v,
+			std::vector<vector>& C,
+			const char *path, uint n)
+{
+	FILE *f = fopen(path, "w");
+	if (f == NULL) {
+		std::cerr << "Cannot open file " << path << std::endl;
+		exit(-1);
+	}
+	fclose(f);
+}
+
 void compare_accurate(uint n, std::vector<vector>& u, std::vector<vector>& u1)
 {
 	char buf[256];
@@ -194,7 +207,6 @@ void simple_ODE(uint n, std::vector<vector>& u, std::vector<vector>& u1)
 	}
 }
 
-
 void direct_problem(uint n, std::vector<vector>& u, std::vector<vector>& u1)
 {
 	char buf[256];
@@ -213,7 +225,74 @@ void direct_problem(uint n, std::vector<vector>& u, std::vector<vector>& u1)
 	}
 }
 
+ptype maximum(std::vector<vector>& v_med)
+{
+	ptype ret = 0;
+	for (int i = 0; i <= L; i++)
+		for (int j = 0; j < v_med[i].size(); j++)
+			ret = MAX(fabs(v_med[i](j)), ret);
+	return ret;
+}
 
+void grad(uint n, std::vector<vector>& p,
+		  std::vector<vector>& p1,
+		  std::vector<vector>& v_med)
+{
+	vector v(n);
+	vector v1(n);
+
+	for (int i = 0; i < L - 1; i++) {
+		v = p[i + 1] - p[i];
+		v = v * (1.0 / h);
+		v1 = p1[i + 1] - p1[i];
+		v1 = v1 * (1.0 / h);
+		v_med[i] = v1 * THETA + v * (1.0 - THETA);
+	}
+	v_med[0] = v_med[1];
+	v_med[n] = v_med[L - 1];
+}
+
+void tracer_problem(uint n, std::vector<vector>& p, std::vector<vector>& p1)
+{
+	char buf[256];
+	start_cond(p);
+
+	std::vector<vector> v_med(L + 1);
+	std::vector<vector> C(L + 1);
+	std::vector<vector> C1(L + 1);
+
+	/* due to the specific realization of std containers */
+	for (int i = 0; i <= L; i++) {
+		v_med[i].init(n);
+		C[i].init(n);
+		C1[i].init(n);
+	}
+
+	progonka gone(n);
+	corner turn(n);
+
+	for (int i = 1; i < ((double)TIME / t); i++) {
+		gone.calculate(p, p1);
+		grad(n, p, p1, v_med);
+		// prepare to calculate next step by corner
+		double c_time = (double)CURANT * h / maximum(v_med);
+		uint steps = (double)t / c_time + 1;
+
+		//printf(">>> max = %g, time = %g, steps = %d\n", maximum(v_med), c_time, steps);
+
+		for (int j = 0; j < steps; j++) {
+			turn.calculate(v_med, C, C1, c_time);
+		}
+
+		if (i % PRNT == 0) {
+			sprintf(buf, "res/data_%06d.vtk", i);
+			write_to_vtk_2d(p1, v_med, C1, buf, n);
+		}
+
+		C = C1;
+		p = p1;
+	}
+}
 
 int main(int argc, char **argv)
 {
@@ -234,8 +313,9 @@ int main(int argc, char **argv)
 	std::cout << "Space step = " << h << ", time step = " << t << std::endl;
 
 //	direct_problem(n, u, u1);
-	simple_ODE(n, u, u1);
+//	simple_ODE(n, u, u1);
 //	compare_accurate(n, u, u1);
+	tracer_problem(n, u, u1);
 
 	std::cout << "DONE" << std::endl;
 	return 0;

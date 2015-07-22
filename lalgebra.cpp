@@ -401,3 +401,31 @@ vector vector::operator*(const ptype b)
 	return c;
 };
 
+vector vector::add_abs()
+{
+	vector c(n);
+	for (int i = 0; i < n; i++) {
+		c.array[i] = (array[i] >= 0) ? 2 * array[i] : 0;
+	}
+	return c;
+};
+
+vector vector::dif_abs()
+{
+	vector c(n);
+	for (int i = 0; i < n; i++) {
+		c.array[i] = (array[i] >= 0) ? 0 : 2 * array[i];
+	}
+	return c;
+};
+
+vector vector::mult(const vector& b)
+{
+	assert(n == b.n);
+	vector c(n);
+	for (int i = 0; i < n; i++) {
+		c.array[i] = array[i] * b.array[i];
+	}
+	return c;
+};
+

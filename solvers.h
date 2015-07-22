@@ -28,4 +28,19 @@ private:
 	matrix *C;
 };
 
+class corner
+{
+public:
+	corner(uint n_size);
+	~corner();
+	void calculate( std::vector<vector>& v_med,
+			std::vector<vector>& C,
+			std::vector<vector>& C1, double dt);
+private:
+	void edge_conditions(const std::vector<vector>& C, std::vector<vector>& C1);
+	uint n;
+	matrix *K;
+};
+
+
 #endif // _SLB_SOLVERS_LIB

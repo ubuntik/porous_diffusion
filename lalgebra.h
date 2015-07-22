@@ -33,6 +33,9 @@ public:
 	vector operator-(const vector &b);
 	vector operator*(const ptype b);
 	vector& operator=(const vector& b);
+	vector add_abs();
+	vector dif_abs();
+	vector mult(const vector& b);
 	void print();
 	uint size() { return n; };
 private:
