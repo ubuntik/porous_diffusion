@@ -157,17 +157,23 @@ void corner::edge_conditions(const std::vector<vector>& C, std::vector<vector>& 
 };
 
 void corner::calculate(	std::vector<vector>& v_med,
-			std::vector<vector>& C,
+			const std::vector<vector>& C,
 			std::vector<vector>& C1, double dt)
 {
+	uint n = power(P, GAMMA - 1);
 	vector v(n);
+	vector crt(n);
+	vector crt_1(n);
 	/* edge conditions */
 	edge_conditions(C, C1);
 
 	for (int i = 1; i < L; i++) {
 		v = (*K) * v_med[i];
-		C1[i] = C[i] - ((v.dif_abs()).mult(C[i + 1] - C[i]) +
-				(v.add_abs()).mult(C[i] - C[i - 1])) * (dt / 2 / h);
+		crt = C[i];
+		crt_1 = C[i + 1];
+		C1[i] = C[i];
+		C1[i] = C1[i] - ((v.dif_abs()).mult(crt_1 - C[i]) +
+			(v.add_abs()).mult(crt - C[i - 1])) * (dt / 2.0 / h);
 	}
 };
 

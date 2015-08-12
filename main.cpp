@@ -140,6 +140,31 @@ void write_to_vtk3(std::vector< std::vector<vector> >& u, const char *path, uint
 	fclose(f);
 }
 
+void write_to_vtk2d(std::vector<vector>& u, const char *path, const char *data,
+			const int N[2], const double o[2], const double hh[2])
+{
+	FILE *f;
+	f = fopen(path, "w");
+	fprintf(f, "# vtk DataFile Version 3.0\n");
+	fprintf(f, "Created by write_to_vtk2d\n");
+	fprintf(f, "ASCII\n");
+	fprintf(f, "DATASET STRUCTURED_POINTS\n");
+	fprintf(f, "DIMENSIONS %d %d 1\n", N[0], N[1]);
+	fprintf(f, "SPACING %f %f 0.0\n", hh[0], hh[1]);
+	fprintf(f, "ORIGIN %f %f 0.0\n", o[0], o[1]);
+	fprintf(f, "POINT_DATA %d\n", N[0] * N[1]);
+
+	fprintf(f, "SCALARS %s float 1\n", data);
+	fprintf(f, "LOOKUP_TABLE %s_table\n", data);
+	for (int i2 = 0; i2 < N[1]; i2++) {
+		for (int i1 = 0; i1 < N[0]; i1++) {
+			fprintf(f, "%f\n", u[i1](i2));
+		}
+	}
+        fclose(f);
+}
+
+#if 0
 void write_to_vtk_2d(	std::vector<vector>& p,
 			std::vector<vector>& v,
 			std::vector<vector>& C,
@@ -152,6 +177,7 @@ void write_to_vtk_2d(	std::vector<vector>& p,
 	}
 	fclose(f);
 }
+#endif
 
 void compare_accurate(uint n, std::vector<vector>& u, std::vector<vector>& u1)
 {
@@ -241,21 +267,35 @@ void grad(uint n, std::vector<vector>& p,
 	vector v(n);
 	vector v1(n);
 
-	for (int i = 0; i < L - 1; i++) {
-		v = p[i + 1] - p[i];
+	for (int i = 1; i < L; i++) {
+		v = p[i - 1] - p[i];
 		v = v * (1.0 / h);
-		v1 = p1[i + 1] - p1[i];
+		v1 = p1[i - 1] - p1[i];
 		v1 = v1 * (1.0 / h);
 		v_med[i] = v1 * THETA + v * (1.0 - THETA);
 	}
 	v_med[0] = v_med[1];
-	v_med[n] = v_med[L - 1];
+	v_med[L] = v_med[L - 1];
 }
+
+
+void start_cond_con(std::vector<vector>& C)
+{
+	uint n = C[0].size();
+	for (int i = 0; i < n; i++) {
+		C.at(0)(i) = 1;
+		C.at(L)(i) = 0;
+	}
+};
+
 
 void tracer_problem(uint n, std::vector<vector>& p, std::vector<vector>& p1)
 {
 	char buf[256];
 	start_cond(p);
+	double hh[2] = {h, 10}; /* Шаг сетки */
+	double o[2] = {0.0, 0.0}; /* Положение в пространстве */
+	int N[2] = {L, n}; /* Число точек расчетной области по осям */
 
 	std::vector<vector> v_med(L + 1);
 	std::vector<vector> C(L + 1);
@@ -268,10 +308,12 @@ void tracer_problem(uint n, std::vector<vector>& p, std::vector<vector>& p1)
 		C1[i].init(n);
 	}
 
+	start_cond_con(C);
+
 	progonka gone(n);
 	corner turn(n);
 
-	for (int i = 1; i < ((double)TIME / t); i++) {
+	for (int i = 0; i < ((double)TIME / t); i++) {
 		gone.calculate(p, p1);
 		grad(n, p, p1, v_med);
 		// prepare to calculate next step by corner
@@ -285,8 +327,19 @@ void tracer_problem(uint n, std::vector<vector>& p, std::vector<vector>& p1)
 		}
 
 		if (i % PRNT == 0) {
-			sprintf(buf, "res/data_%06d.vtk", i);
-			write_to_vtk_2d(p1, v_med, C1, buf, n);
+
+			N[0] = L;
+
+			sprintf(buf, "res/pres_%06d.vtk", i);
+			write_to_vtk2d(p, buf, "pressure", N, o, hh);
+
+			N[0] = L + 1;
+
+			sprintf(buf, "res/velo_%06d.vtk", i);
+			write_to_vtk2d(v_med, buf, "velocity", N, o, hh);
+
+			sprintf(buf, "res/conc_%06d.vtk", i);
+			write_to_vtk2d(C, buf, "concentration", N, o, hh);
 		}
 
 		C = C1;
