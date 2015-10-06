@@ -1,5 +1,7 @@
 /*
+ * @file matrixes.h
  *
+ * @author Anna Subbotina
  */
 
 void get_K(matrix &K)

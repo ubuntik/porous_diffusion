@@ -7,7 +7,7 @@ CFLAGS = -g -llapack
 all: main
 
 main:
-	$(CC) $(CFLAGS) lalgebra.cpp solvers.cpp main.cpp -o main
+	$(CC) $(CFLAGS) lalgebra.cpp solvers.cpp vtk.cpp main.cpp -o main
 
 clean:
 	rm -rf main main.dSYM res/*
