@@ -16,7 +16,7 @@
 #include "vtk.h"
 #include "config.h"
 
-#define PRNT 10
+#define PRNT 1
 
 std::vector<ptype> acc(L);
 
@@ -164,7 +164,6 @@ void start_cond_con(std::vector<vector>& C)
 	}
 };
 
-
 void tracer_problem(uint n, std::vector<vector>& p, std::vector<vector>& p1)
 {
 	char buf[256];
@@ -208,6 +207,9 @@ void tracer_problem(uint n, std::vector<vector>& p, std::vector<vector>& p1)
 
 			sprintf(buf, "res/pres_%06d.vtk", i);
 			write_to_vtk2d(p, buf, "pressure", N, o, hh);
+
+			sprintf(buf, "res/data_%06d.vtk", i);
+			write_to_vtk1(p, buf, n);
 
 			N[0] = L + 1;
 

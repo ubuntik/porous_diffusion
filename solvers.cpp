@@ -87,32 +87,29 @@ void progonka::calculate(const std::vector<vector>& u, std::vector<vector>& u1)
 	matrix G(n);
 
 	/* due to the specific realization of std containers */
-//	for (std::vector<vector>::iterator it = Ps.begin(); it != Ps.end(); ++it) {
 	for (int i = 0; i < L; i++) {
 		Ps[i].init(n);
 		Qs[i].init(n);
 	}
 
-	/* progonka coeffs start cond */
-
+	/* left edge */
+	uint *u_left = (uint *)calloc(sizeof(uint), n);
 /*
- * Something wrong, this gets left edge falling to null
- * But this is done according to prof. Lobanov book
- *
-	Fi = ((*A_ini) * (1.0 / t)) * u[0];
-	Ps[0] = ((*B).inverse() * (*C)) * (-1);
-	Qs[0] = (*B).inverse() * Fi;
-
+	u_left[1] = 1;
+	u_left[3] = 1;
+	u_left[5] = 1;
+	u_left[7] = 1;
 */
-
-	Ps[0].init(n);
-	Qs[0].init(n, P_LEFT);
+	for (int i = 0; i < n; i++) {
+		Ps[0](i, i) = u_left[i] ? P_LEFT : 0;
+		Qs[0](i) = u_left[i] ? 0 : 1;
+	}
 
 	/* edge conditions */
-	edge_conditions(u, u1);
+	//edge_conditions(u, u1);
 
 	/* There */
-	for (int i = 1; i < L - 1; i++) {
+	for (int i = 1; i < L; i++) {
 		Fi = ((*A_ini) * (1.0 / t)) * u[i];
 		G = ((*A * Ps[i - 1]) + *B).inverse();
 
@@ -120,13 +117,32 @@ void progonka::calculate(const std::vector<vector>& u, std::vector<vector>& u1)
 		Qs[i] = G * (Fi - (*A * Qs[i - 1]));
 	}
 
-// I don't remember why this is here
-//	u1[L - 2] = Qs[L - 2];
-
-
 	/* and Back Again */
 	for (int i = L - 2; i >= 0; i--) {
 		u1[i] = (Ps[i] * u1[i + 1]) + Qs[i];
+	}
+
+	/* right edge */
+	uint *u_right = (uint *)calloc(sizeof(uint), n);
+/*
+	u_right[0] = 1;
+	u_right[2] = 1;
+	u_right[4] = 1;
+	u_right[6] = 1;
+*/
+
+	//Qs[L - 1] = u1[L - 2] - Qs[L - 1];
+
+	double *x = (double *)calloc(sizeof(double), n);
+	double *a = (double *)calloc(sizeof(double), n * n);
+	double *b = (double *)calloc(sizeof(double), n);
+	memcpy(a, Ps[L - 1].get_ptr(), sizeof(double) * n * n);
+	memcpy(b, Qs[L - 1].get_ptr(), sizeof(double) * n);
+
+	//solve_eq(a, b, x, n);
+
+	for (int i = 0; i < n; i++) {
+		u1[L - 1](i) = u_right[i] ? x[i] : u1[L - 1](i);
 	}
 
 	Ps.clear();

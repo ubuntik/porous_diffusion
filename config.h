@@ -21,7 +21,7 @@
 // Number of steps by space
 #define L (LENGTH / h)
 // Considerable time
-#define TIME 100
+#define TIME 20
 // Step by time
 #define t 0.1
 // coefficient for tracer calculation (0 <= THETA <= 1)

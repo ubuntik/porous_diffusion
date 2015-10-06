@@ -18,6 +18,11 @@ extern "C" {
 
 	// generate inverse of a matrix given its LU decomposition
 	void dgetri_(int* N, double* A, int* lda, int* IPIV, double* WORK, int* lwork, int* INFO);
+
+	void dgetrs_(char *TRANS, int *N, int *NRHS, double *A,
+		int *LDA, int *IPIV, double *B, int *LDB, int *INFO );
+
+	void dgesv_(int* N, int* NRHS, double* A, int *LDA, int* IPIV, double* B, int* LDB, int* INFO);
 }
 
 ptype power(ptype base, ptype exponent)
@@ -40,6 +45,28 @@ ptype power(ptype base, ptype exponent)
 		return half_pow * half_pow;
 	} else
 		return base * power(base, exponent - 1);
+};
+
+void solve_eq(const double *a, const double *B, double *x, int n)
+{
+	char trans = 'N';
+	int dim = n, LDA = n, LDB = n;
+	int nrhs = 1, info;
+	int ipiv[3];
+	double *A = (double *)calloc(sizeof(double), n * n);
+
+	assert(a != NULL);
+	assert(A != NULL);
+	assert(B != NULL);
+	assert(x != NULL);
+	assert(n > 1);
+
+	memcpy(x, B, sizeof(double) * n);
+	memcpy(A, a, sizeof(double) * n * n);
+
+	dgetrf_(&dim, &dim, A, &LDA, ipiv, &info);
+//	dgetrs_(&trans, &dim, &nrhs, A, &LDA, ipiv, x, &LDB, &info);
+	dgesv_(&dim, &nrhs, A, &LDA, ipiv, x, &LDB, &info);
 };
 
 matrix::matrix()
