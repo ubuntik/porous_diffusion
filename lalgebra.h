@@ -37,6 +37,7 @@ public:
 	vector& operator=(const vector& b);
 	vector add_abs();
 	vector dif_abs();
+	ptype sum();
 	vector mult(const vector& b);
 	void print();
 	uint size() { return n; };

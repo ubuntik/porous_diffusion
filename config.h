@@ -15,13 +15,13 @@
 // Number of porosity levels
 #define GAMMA 4
 // Length of considerable sample (1 meter)
-#define LENGTH 100
+#define LENGTH 1000
 // Step by space
 #define h 1.0
 // Number of steps by space
 #define L (LENGTH / h)
 // Considerable time
-#define TIME 20
+#define TIME 3000
 // Step by time
 #define t 0.1
 // coefficient for tracer calculation (0 <= THETA <= 1)

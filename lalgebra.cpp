@@ -52,7 +52,7 @@ void solve_eq(const double *a, const double *B, double *x, int n)
 	char trans = 'N';
 	int dim = n, LDA = n, LDB = n;
 	int nrhs = 1, info;
-	int ipiv[3];
+	int *ipiv = (int *)calloc(sizeof(int), n + 1);
 	double *A = (double *)calloc(sizeof(double), n * n);
 
 	assert(a != NULL);
@@ -65,8 +65,8 @@ void solve_eq(const double *a, const double *B, double *x, int n)
 	memcpy(A, a, sizeof(double) * n * n);
 
 	dgetrf_(&dim, &dim, A, &LDA, ipiv, &info);
-//	dgetrs_(&trans, &dim, &nrhs, A, &LDA, ipiv, x, &LDB, &info);
-	dgesv_(&dim, &nrhs, A, &LDA, ipiv, x, &LDB, &info);
+	dgetrs_(&trans, &dim, &nrhs, A, &LDA, ipiv, x, &LDB, &info);
+//	dgesv_(&dim, &nrhs, A, &LDA, ipiv, x, &LDB, &info);
 };
 
 matrix::matrix()
@@ -454,5 +454,13 @@ vector vector::mult(const vector& b)
 		c.array[i] = array[i] * b.array[i];
 	}
 	return c;
+};
+
+ptype vector::sum()
+{
+	ptype ret = 0;
+	for (int i = 0; i < n; i++)
+		ret += array[i];
+	return ret;
 };
 

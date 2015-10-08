@@ -16,7 +16,7 @@
 #include "vtk.h"
 #include "config.h"
 
-#define PRNT 1
+#define PRNT 20
 
 std::vector<ptype> acc(L);
 
@@ -175,12 +175,14 @@ void tracer_problem(uint n, std::vector<vector>& p, std::vector<vector>& p1)
 	std::vector<vector> v_med(L + 1);
 	std::vector<vector> C(L + 1);
 	std::vector<vector> C1(L + 1);
+	std::vector<vector> C_slice(L + 1);
 
 	/* due to the specific realization of std containers */
 	for (int i = 0; i <= L; i++) {
 		v_med[i].init(n);
 		C[i].init(n);
 		C1[i].init(n);
+		C_slice[i].init(n);
 	}
 
 	start_cond_con(C);
@@ -218,6 +220,12 @@ void tracer_problem(uint n, std::vector<vector>& p, std::vector<vector>& p1)
 
 			sprintf(buf, "res/conc_%06d.vtk", i);
 			write_to_vtk2d(C, buf, "concentration", N, o, hh);
+
+			for (int k = 0; k < L + 1; k++) {
+				C_slice[k] = C[k].mult(v_med[k]) * (1.0 / v_med[k].sum());
+			}
+			sprintf(buf, "res/scon_%06d.vtk", i);
+			write_to_vtk1(C_slice, buf, n);
 		}
 
 		C = C1;

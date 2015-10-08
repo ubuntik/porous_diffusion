@@ -130,21 +130,18 @@ void progonka::calculate(const std::vector<vector>& u, std::vector<vector>& u1)
 	u_right[4] = 1;
 	u_right[6] = 1;
 */
-
-	//Qs[L - 1] = u1[L - 2] - Qs[L - 1];
-
 	double *x = (double *)calloc(sizeof(double), n);
-	double *a = (double *)calloc(sizeof(double), n * n);
-	double *b = (double *)calloc(sizeof(double), n);
-	memcpy(a, Ps[L - 1].get_ptr(), sizeof(double) * n * n);
-	memcpy(b, Qs[L - 1].get_ptr(), sizeof(double) * n);
+	for (int i = 0; i < n; i++)
+		Ps[L - 1](i,i) = 1 - Ps[L - 1](i,i);
 
-	//solve_eq(a, b, x, n);
+	solve_eq(Ps[L - 1].get_ptr(), Qs[L - 1].get_ptr(), x, n);
 
-	for (int i = 0; i < n; i++) {
+	for (int i = 0; i < n; i++)
 		u1[L - 1](i) = u_right[i] ? x[i] : u1[L - 1](i);
-	}
 
+	free(x);
+	free(u_left);
+	free(u_right);
 	Ps.clear();
 	Qs.clear();
 };
