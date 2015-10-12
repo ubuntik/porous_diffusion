@@ -16,7 +16,7 @@
 #include "vtk.h"
 #include "config.h"
 
-#define PRNT 20
+#define PRNT 1
 
 std::vector<ptype> acc(L);
 

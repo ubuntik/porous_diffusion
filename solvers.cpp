@@ -23,8 +23,8 @@ progonka::progonka(uint n_size)
 	A = new matrix(n);
 	B = new matrix(n);
 	C = new matrix(n);
-	matrix K_ini(n);
 	matrix D_ini(n);
+	matrix K_ini(n);
 	get_K(K_ini);
 	get_D(D_ini);
 
@@ -64,10 +64,48 @@ progonka::~progonka()
 };
 
 
-void progonka::edge_conditions(const std::vector<vector>& u, std::vector<vector>& u1)
+void progonka::edge_conditions(const std::vector<vector>& u, std::vector<vector>& u1,
+				std::vector<matrix>& Ps, std::vector<vector>& Qs)
 {
-	u1[0] = u[0];
-	u1[L - 1] = u[L - 1];
+	uint n = u1[0].size();
+	/* left edge */
+	uint *u_left = (uint *)calloc(sizeof(uint), n);
+/*
+	u_left[1] = 1;
+	u_left[3] = 1;
+	u_left[5] = 1;
+	u_left[7] = 1;
+*/
+	for (int i = 0; i < n; i++) {
+		Ps[0](i, i) = u_left[i] ? 1 : 0;
+		Qs[0](i) = u_left[i] ? 0 : P_LEFT;
+	}
+
+//	u1[0] = u_0;
+//	u1[L - 1] = u_L;
+
+	/* right edge */
+	uint *u_right = (uint *)calloc(sizeof(uint), n);
+/*
+	u_right[0] = 1;
+	u_right[2] = 1;
+	u_right[4] = 1;
+	u_right[6] = 1;
+*/
+//	double *x = (double *)calloc(sizeof(double), n);
+	for (int i = 0; i < n; i++) {
+//		Ps[L - 1](i,i) = Ps[L - 1](i,i) - 1;
+		/* Ps[L - 1] should be 0 ??? */
+		Qs[L - 1](i) = P_RIGHT;
+	}
+
+//	solve_eq(Ps[L - 1].get_ptr(), Qs[L - 1].get_ptr(), x, n);
+
+//	for (int i = 0; i < n; i++)
+//		u1[L - 1](i) = u_right[i] ? x[i] : u1[L - 1](i);
+
+	free(u_left);
+	free(u_right);
 };
 
 
@@ -92,24 +130,11 @@ void progonka::calculate(const std::vector<vector>& u, std::vector<vector>& u1)
 		Qs[i].init(n);
 	}
 
-	/* left edge */
-	uint *u_left = (uint *)calloc(sizeof(uint), n);
-/*
-	u_left[1] = 1;
-	u_left[3] = 1;
-	u_left[5] = 1;
-	u_left[7] = 1;
-*/
-	for (int i = 0; i < n; i++) {
-		Ps[0](i, i) = u_left[i] ? P_LEFT : 0;
-		Qs[0](i) = u_left[i] ? 0 : 1;
-	}
-
 	/* edge conditions */
-	//edge_conditions(u, u1);
+	edge_conditions(u, u1, Ps, Qs);
 
 	/* There */
-	for (int i = 1; i < L; i++) {
+	for (int i = 1; i < L - 1; i++) {
 		Fi = ((*A_ini) * (1.0 / t)) * u[i];
 		G = ((*A * Ps[i - 1]) + *B).inverse();
 
@@ -117,31 +142,13 @@ void progonka::calculate(const std::vector<vector>& u, std::vector<vector>& u1)
 		Qs[i] = G * (Fi - (*A * Qs[i - 1]));
 	}
 
+	u1[L - 1] = Qs[L - 1];
+
 	/* and Back Again */
 	for (int i = L - 2; i >= 0; i--) {
 		u1[i] = (Ps[i] * u1[i + 1]) + Qs[i];
 	}
 
-	/* right edge */
-	uint *u_right = (uint *)calloc(sizeof(uint), n);
-/*
-	u_right[0] = 1;
-	u_right[2] = 1;
-	u_right[4] = 1;
-	u_right[6] = 1;
-*/
-	double *x = (double *)calloc(sizeof(double), n);
-	for (int i = 0; i < n; i++)
-		Ps[L - 1](i,i) = 1 - Ps[L - 1](i,i);
-
-	solve_eq(Ps[L - 1].get_ptr(), Qs[L - 1].get_ptr(), x, n);
-
-	for (int i = 0; i < n; i++)
-		u1[L - 1](i) = u_right[i] ? x[i] : u1[L - 1](i);
-
-	free(x);
-	free(u_left);
-	free(u_right);
 	Ps.clear();
 	Qs.clear();
 };

@@ -20,7 +20,8 @@ public:
 	~progonka();
 	void calculate(const std::vector<vector>& u, std::vector<vector>& u1);
 private:
-	void edge_conditions(const std::vector<vector>& u, std::vector<vector>& u1);
+	void edge_conditions(const std::vector<vector>& u, std::vector<vector>& u1,
+				std::vector<matrix>& Ps, std::vector<vector>& Qs);
 	uint n;
 	matrix *A_ini;
 	matrix *A;
