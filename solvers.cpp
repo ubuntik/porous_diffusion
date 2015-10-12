@@ -64,47 +64,95 @@ progonka::~progonka()
 };
 
 
-void progonka::edge_conditions(const std::vector<vector>& u, std::vector<vector>& u1,
-				std::vector<matrix>& Ps, std::vector<vector>& Qs)
+void progonka::left_edge(std::vector<matrix>& Ps, std::vector<vector>& Qs)
 {
-	uint n = u1[0].size();
-	/* left edge */
+	uint n = Ps[0].size();
 	uint *u_left = (uint *)calloc(sizeof(uint), n);
-/*
+
 	u_left[1] = 1;
 	u_left[3] = 1;
 	u_left[5] = 1;
 	u_left[7] = 1;
-*/
+
 	for (int i = 0; i < n; i++) {
 		Ps[0](i, i) = u_left[i] ? 1 : 0;
 		Qs[0](i) = u_left[i] ? 0 : P_LEFT;
 	}
 
-//	u1[0] = u_0;
-//	u1[L - 1] = u_L;
+	free(u_left);
+};
 
-	/* right edge */
+void progonka::right_edge(std::vector<matrix>& Ps, std::vector<vector>& Qs)
+{
+	uint n = Ps[0].size();
 	uint *u_right = (uint *)calloc(sizeof(uint), n);
-/*
+
 	u_right[0] = 1;
 	u_right[2] = 1;
 	u_right[4] = 1;
 	u_right[6] = 1;
-*/
-//	double *x = (double *)calloc(sizeof(double), n);
-	for (int i = 0; i < n; i++) {
-//		Ps[L - 1](i,i) = Ps[L - 1](i,i) - 1;
-		/* Ps[L - 1] should be 0 ??? */
-		Qs[L - 1](i) = P_RIGHT;
+
+	/* Here we should to solve u = Ps u + Qs for u in L - 1 (which is equal to L - 2)
+	 * For some edges we have constant valuse, for others we should to solve equation
+	 * So, reorganize equations with already known valuse (constant edge condition)
+	 * f.i:
+	 * (Ps11 - 1) u1 + Ps12 u2 + Ps13 u3 = -Qs1
+	 * Ps21 u1 + (Ps22 - 1) u2 + Ps23 u3 = -Qs2
+	 * Ps31 u1 + Ps32 u2 + (Ps33 - 1) u3 = -Qs3
+	 * Imagine for the second class of pores we have constant edge condition.
+	 * Thus, exclude the second equation from the system and use known u2 = P_RIGHT
+	 * (Ps11 - 1) u1 + Ps13 u3 = -Qs1 - Ps12 * P_RIGHT
+	 * Ps31 u1 + (Ps33 - 1) u3 = -Qs3 - Ps32 * P_RIGHT
+	 * Than, we use lapack to solve this system of linear equations
+	 */
+
+	matrix Ai(n); Ai = Ps[L - 2];
+	vector Bi(n); Bi = Qs[L - 2] * (-1);
+
+	for (int j = 0; j < n; j++) {
+		if (u_right[j] == 1) {
+			Ai(j, j) -= 1;
+			continue;
+		} // else (u_right[j] == 0)
+		for (int i = 0; i < n; i++)
+			Bi(i) -= P_RIGHT * Ai(j, i);
+		Bi(j) = 0;
 	}
 
-//	solve_eq(Ps[L - 1].get_ptr(), Qs[L - 1].get_ptr(), x, n);
+	uint m = 0;
+	for (int i = 0; i < n; i++)
+		m += u_right[i];
 
-//	for (int i = 0; i < n; i++)
-//		u1[L - 1](i) = u_right[i] ? x[i] : u1[L - 1](i);
+	matrix A(m);
+	vector B(m);
+	int cnt_i = 0;
+	for (int i = 0; i < n; i++) {
+		if (u_right[i] == 0)
+			continue;
+		int cnt_j = 0;
+		for(int j = 0; j < n; j++) {
+			if (u_right[j] == 0)
+				continue;
+			A(cnt_i, cnt_j) = Ai(i, j);
+			cnt_j++;
+		}
+		B(cnt_i) = Bi(i);
+		cnt_i++;
+	}
 
-	free(u_left);
+	double *x = (double *)calloc(sizeof(double), m);
+	solve_eq(A.get_ptr(), B.get_ptr(), x, m);
+
+	cnt_i = 0;
+	for (int i = 0; i < n; i++) {
+		if (u_right[i] == 1) {
+			Qs[L - 1](i) = x[cnt_i];
+			cnt_i++;
+		} else
+			Qs[L - 1](i) = P_RIGHT;
+	}
+
+	free(x);
 	free(u_right);
 };
 
@@ -131,7 +179,7 @@ void progonka::calculate(const std::vector<vector>& u, std::vector<vector>& u1)
 	}
 
 	/* edge conditions */
-	edge_conditions(u, u1, Ps, Qs);
+	left_edge(Ps, Qs);
 
 	/* There */
 	for (int i = 1; i < L - 1; i++) {
@@ -141,6 +189,9 @@ void progonka::calculate(const std::vector<vector>& u, std::vector<vector>& u1)
 		Ps[i] = (G * (*C)) * (-1);
 		Qs[i] = G * (Fi - (*A * Qs[i - 1]));
 	}
+
+	/* edge conditions */
+	right_edge(Ps, Qs);
 
 	u1[L - 1] = Qs[L - 1];
 

@@ -33,7 +33,7 @@
 
 // edge conditions
 #define P_LEFT 1
-#define P_RIGHT 2
+#define P_RIGHT 0
 
 #define K_DIAG 1
 #define K_ELEM 0
