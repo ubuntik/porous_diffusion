@@ -68,12 +68,12 @@ void progonka::left_edge(std::vector<matrix>& Ps, std::vector<vector>& Qs)
 {
 	uint n = Ps[0].size();
 	uint *u_left = (uint *)calloc(sizeof(uint), n);
-
+/*
 	u_left[1] = 1;
 	u_left[3] = 1;
 	u_left[5] = 1;
 	u_left[7] = 1;
-
+*/
 	for (int i = 0; i < n; i++) {
 		Ps[0](i, i) = u_left[i] ? 1 : 0;
 		Qs[0](i) = u_left[i] ? 0 : P_LEFT;
@@ -86,12 +86,12 @@ void progonka::right_edge(std::vector<matrix>& Ps, std::vector<vector>& Qs)
 {
 	uint n = Ps[0].size();
 	uint *u_right = (uint *)calloc(sizeof(uint), n);
-
+/*
 	u_right[0] = 1;
 	u_right[2] = 1;
 	u_right[4] = 1;
 	u_right[6] = 1;
-
+*/
 	/* Here we should to solve u = Ps u + Qs for u in L - 1 (which is equal to L - 2)
 	 * For some edges we have constant valuse, for others we should to solve equation
 	 * So, reorganize equations with already known valuse (constant edge condition)
@@ -106,6 +106,20 @@ void progonka::right_edge(std::vector<matrix>& Ps, std::vector<vector>& Qs)
 	 * Than, we use lapack to solve this system of linear equations
 	 */
 
+	uint m = 0;
+	for (int i = 0; i < n; i++)
+		m += u_right[i];
+
+	// if for all classes of pores the right edge condition is constant
+	if (m == 0) {
+		for (int i = 0; i < n; i++)
+			Qs[L - 1](i) = P_RIGHT;
+		free(u_right);
+		return;
+	}
+
+	// add case for m = 1
+
 	matrix Ai(n); Ai = Ps[L - 2];
 	vector Bi(n); Bi = Qs[L - 2] * (-1);
 
@@ -118,10 +132,6 @@ void progonka::right_edge(std::vector<matrix>& Ps, std::vector<vector>& Qs)
 			Bi(i) -= P_RIGHT * Ai(j, i);
 		Bi(j) = 0;
 	}
-
-	uint m = 0;
-	for (int i = 0; i < n; i++)
-		m += u_right[i];
 
 	matrix A(m);
 	vector B(m);
