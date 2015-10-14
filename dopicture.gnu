@@ -38,8 +38,8 @@ set title 'Sample #9'
 set xlabel 'x'
 #set ylabel 'p(t)'
 set ylabel "C(x,{/Symbol z})"
-set xrange [0:120]
-set yrange [0:0.15]
+set xrange [0:100]
+set yrange [0:1]
 
 
 plot 'plot.dat' u 1:2 t 'p1' w lp ls 1, \

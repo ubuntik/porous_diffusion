@@ -5,6 +5,9 @@
  *
  */
 
+#ifndef _SLB_VTKPRINT_LIB
+#define _SLB_VTKPRINT_LIB
+
 #include <vector>
 #include "lalgebra.h"
 #include "config.h"
@@ -20,3 +23,4 @@ void write_to_vtk3(std::vector< std::vector<vector> >& u, const char *path, uint
 void write_to_vtk2d(std::vector<vector>& u, const char *path, const char *data,
 			const int N[2], const double o[2], const double hh[2]);
 
+#endif // _SLB_VTKPRINT_LIB

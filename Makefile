@@ -10,4 +10,4 @@ main:
 	$(CC) lalgebra.cpp solvers.cpp vtk.cpp main.cpp $(CFLAGS) -o main
 
 clean:
-	rm -rf main main.dSYM res/*
+	rm -rf main main.dSYM res; mkdir res

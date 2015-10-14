@@ -16,7 +16,7 @@
 #include "vtk.h"
 #include "config.h"
 
-#define PRNT 10
+#define PRNT 100
 
 std::vector<ptype> acc(L);
 
@@ -158,17 +158,19 @@ void grad(uint n, std::vector<vector>& p,
 void start_cond_con(std::vector<vector>& C)
 {
 	uint n = C[0].size();
-	for (int i = 0; i < n; i++) {
-		C.at(0)(i) = 1;
-		C.at(L)(i) = 0;
-	}
+	uint *left = (uint *)calloc(sizeof(uint), n);
+	get_left_edge(left);
+	/* free edge -> close C=0, fixed edge -> pressure C=1 */
+	for (int i = 0; i < n; i++)
+		C.at(0)(i) = (left[i] == 1) ? 0 : 1;
+	free(left);
 };
 
 void tracer_problem(uint n, std::vector<vector>& p, std::vector<vector>& p1)
 {
 	char buf[256];
 	start_cond(p);
-	double hh[2] = {h, 10}; /* Шаг сетки */
+	double hh[2] = {h, 50}; /* Шаг сетки */
 	double o[2] = {0.0, 0.0}; /* Положение в пространстве */
 	int N[2] = {L, n}; /* Число точек расчетной области по осям */
 
@@ -200,7 +202,7 @@ void tracer_problem(uint n, std::vector<vector>& p, std::vector<vector>& p1)
 		//printf(">>> max = %g, time = %g, steps = %d\n", maximum(v_med), c_time, steps);
 
 		for (int j = 0; j < steps; j++) {
-			turn.calculate(v_med, C, C1, c_time);
+			turn.calculate(v_med, p1, C, C1, c_time);
 		}
 
 		if (i % PRNT == 0) {

@@ -68,15 +68,11 @@ void progonka::left_edge(std::vector<matrix>& Ps, std::vector<vector>& Qs)
 {
 	uint n = Ps[0].size();
 	uint *u_left = (uint *)calloc(sizeof(uint), n);
-/*
-	u_left[1] = 1;
-	u_left[3] = 1;
-	u_left[5] = 1;
-	u_left[7] = 1;
-*/
+	get_left_edge(u_left);
+
 	for (int i = 0; i < n; i++) {
-		Ps[0](i, i) = u_left[i] ? 1 : 0;
-		Qs[0](i) = u_left[i] ? 0 : P_LEFT;
+		Ps[0](i, i) = (u_left[i] == 1) ? 1 : 0;
+		Qs[0](i) = (u_left[i] == 1) ? 0 : P_LEFT;
 	}
 
 	free(u_left);
@@ -86,12 +82,8 @@ void progonka::right_edge(std::vector<matrix>& Ps, std::vector<vector>& Qs)
 {
 	uint n = Ps[0].size();
 	uint *u_right = (uint *)calloc(sizeof(uint), n);
-/*
-	u_right[0] = 1;
-	u_right[2] = 1;
-	u_right[4] = 1;
-	u_right[6] = 1;
-*/
+	get_right_edge(u_right);
+
 	/* Here we should to solve u = Ps u + Qs for u in L - 1 (which is equal to L - 2)
 	 * For some edges we have constant valuse, for others we should to solve equation
 	 * So, reorganize equations with already known valuse (constant edge condition)
@@ -224,20 +216,39 @@ corner::corner(uint n_size)
 
 	K = new matrix(n);
 	*K = K_ini * (1.0 / ETA);
+
+	D = new matrix(n);
+	get_D(*D);
 };
 
 corner::~corner()
 {
 	delete K;
+	delete D;
 };
 
-void corner::edge_conditions(const std::vector<vector>& C, std::vector<vector>& C1)
+void corner::left_edge(std::vector<vector>& C1)
 {
-	C1[0] = C[0];
-	C1[L] = C[L];
+	uint n = C1[0].size();
+	uint *u_left = (uint *)calloc(sizeof(uint), n);
+	get_left_edge(u_left);
+
+	for (int i = 0; i < n; i++)
+		C1[0](i) = (u_left[i] == 1) ? 0 : 1;
+
+	free(u_left);
 };
 
-void corner::calculate(	std::vector<vector>& v_med,
+void corner::right_edge(std::vector<vector>& C1)
+{
+	/* for all classes of pores: dC/dx = 0 */
+	uint n = C1[0].size();
+	for (int i = 0; i < n; i++)
+		C1[L](i) = C1[L - 1](i);
+};
+
+void corner::calculate(	const std::vector<vector>& v_med,
+			const std::vector<vector>& p,
 			const std::vector<vector>& C,
 			std::vector<vector>& C1, double dt)
 {
@@ -245,17 +256,40 @@ void corner::calculate(	std::vector<vector>& v_med,
 	vector v(n);
 	vector crt(n);
 	vector crt_1(n);
-	/* edge conditions */
-	edge_conditions(C, C1);
+	vector q(n);
 
-	for (int i = 1; i < L; i++) {
-		v = (*K) * v_med[i];
-		crt = C[i];
-		crt_1 = C[i + 1];
-		C1[i] = C[i];
-		C1[i] = C1[i] - ((v.dif_abs()).mult(crt_1 - C[i]) +
-			(v.add_abs()).mult(crt - C[i - 1])) * (dt / 2.0 / h);
+	left_edge(C1);
+
+	for (int x = 1; x < L; x++) {
+		/* split on physical processes */
+		/* 1. calculate dC/dt + U dC/dx = 0 */
+		v = (*K) * v_med[x];
+		crt = C[x];
+		crt_1 = C[x + 1];
+		C1[x] = C[x];
+		C1[x] = C1[x] - ((v.dif_abs()).mult(crt_1 - C[x]) +
+			(v.add_abs()).mult(crt - C[x - 1])) * (dt / 2.0 / h);
+
+		/* 2. calculate additional mass transfer dC/dt + U dC/dx = q */
+		/* q = -C(i|Pi >= Pj, i != j / j) D(i,j) (Pi - Pj) */
+
+		for (int i = 0; i < n; i++) {
+			q(i) = 0;
+			for (int j = 0; j < n; j++) {
+				if (i == j)
+					continue;
+				q(i) += ((p[x](i) >= p[x](j)) ? C1[x](i) : C1[x](j)) *
+					((*D)(i,j)) * (p[x](i) - p[x](j));
+			}
+
+			C1[x](i) += q(i) * dt;
+			if (C1[x](i) < 0)
+				C1[x](i) = 0;
+		}
+
 	}
+
+	right_edge(C1);
 };
 
 

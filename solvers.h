@@ -34,14 +34,32 @@ class corner
 public:
 	corner(uint n_size);
 	~corner();
-	void calculate( std::vector<vector>& v_med,
+	void calculate( const std::vector<vector>& v_med,
+			const std::vector<vector>& p,
 			const std::vector<vector>& C,
 			std::vector<vector>& C1, double dt);
 private:
-	void edge_conditions(const std::vector<vector>& C, std::vector<vector>& C1);
+	void left_edge(std::vector<vector>& C1);
+	void right_edge(std::vector<vector>& C1);
 	uint n;
 	matrix *K;
+	matrix *D;
 };
 
+static void get_left_edge(uint* u_left)
+{
+	u_left[1] = 1;
+	u_left[3] = 1;
+	u_left[5] = 1;
+	u_left[7] = 1;
+}
+
+static void get_right_edge(uint* u_right)
+{
+	u_right[0] = 1;
+	u_right[2] = 1;
+	u_right[4] = 1;
+	u_right[6] = 1;
+}
 
 #endif // _SLB_SOLVERS_LIB
