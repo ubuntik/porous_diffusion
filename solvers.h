@@ -20,9 +20,8 @@ public:
 	~progonka();
 	void calculate(const std::vector<vector>& u, std::vector<vector>& u1);
 private:
-	void left_edge(std::vector<matrix>& Ps, std::vector<vector>& Qs);
-	void right_edge(std::vector<matrix>& Ps, std::vector<vector>& Qs);
 	uint n;
+	uint l;
 	matrix *A_ini;
 	matrix *A;
 	matrix *B;

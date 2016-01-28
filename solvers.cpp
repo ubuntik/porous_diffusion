@@ -14,6 +14,9 @@
 #include "lalgebra.h"
 #include "matrixes.h"
 
+#undef L
+#define L 8
+
 progonka::progonka(uint n_size)
 {
 	n = n_size;
@@ -76,104 +79,6 @@ progonka::~progonka()
 	delete C;
 };
 
-
-void progonka::left_edge(std::vector<matrix>& Ps, std::vector<vector>& Qs)
-{
-	uint n = Ps[1].size();
-	uint *u_left = (uint *)calloc(sizeof(uint), n);
-	get_left_edge(u_left);
-
-	for (int i = 0; i < n; i++) {
-//		Ps[1](i, i) = (u_left[i] == 1) ? 1 : 0;
-//		Qs[1](i) = (u_left[i] == 1) ? 0 : P_LEFT;
-		Ps[0](i, i) = (u_left[i] == 1) ? 1 : 0;
-		Qs[0](i) = (u_left[i] == 1) ? 0 : P_LEFT;
-	}
-
-	free(u_left);
-};
-
-void progonka::right_edge(std::vector<matrix>& Ps, std::vector<vector>& Qs)
-{
-	uint n = Ps[L - 2].size();
-	uint *u_right = (uint *)calloc(sizeof(uint), n);
-	get_right_edge(u_right);
-
-	/* Here we should to solve u = Ps u + Qs for u in L - 1 (which is equal to L - 2)
-	 * For some edges we have constant valuse, for others we should to solve equation
-	 * So, reorganize equations with already known valuse (constant edge condition)
-	 * f.i:
-	 * (Ps11 - 1) u1 + Ps12 u2 + Ps13 u3 = -Qs1
-	 * Ps21 u1 + (Ps22 - 1) u2 + Ps23 u3 = -Qs2
-	 * Ps31 u1 + Ps32 u2 + (Ps33 - 1) u3 = -Qs3
-	 * Imagine for the second class of pores we have constant edge condition.
-	 * Thus, exclude the second equation from the system and use known u2 = P_RIGHT
-	 * (Ps11 - 1) u1 + Ps13 u3 = -Qs1 - Ps12 * P_RIGHT
-	 * Ps31 u1 + (Ps33 - 1) u3 = -Qs3 - Ps32 * P_RIGHT
-	 * Than, we use lapack to solve this system of linear equations
-	 */
-
-	uint m = 0;
-	for (int i = 0; i < n; i++)
-		m += u_right[i];
-
-	// if for all classes of pores the right edge condition is constant
-	if (m == 0) {
-		for (int i = 0; i < n; i++)
-			Qs[L - 1](i) = P_RIGHT;
-		free(u_right);
-		return;
-	}
-
-	// add case for m = 1
-
-	matrix Ai(n); Ai = Ps[L - 2];
-	vector Bi(n); Bi = Qs[L - 2] * (-1);
-
-	for (int j = 0; j < n; j++) {
-		if (u_right[j] == 1) {
-			Ai(j, j) -= 1;
-			continue;
-		} // else (u_right[j] == 0)
-		for (int i = 0; i < n; i++)
-			Bi(i) -= P_RIGHT * Ai(j, i);
-		Bi(j) = 0;
-	}
-
-	matrix A(m);
-	vector B(m);
-	int cnt_i = 0;
-	for (int i = 0; i < n; i++) {
-		if (u_right[i] == 0)
-			continue;
-		int cnt_j = 0;
-		for(int j = 0; j < n; j++) {
-			if (u_right[j] == 0)
-				continue;
-			A(cnt_i, cnt_j) = Ai(i, j);
-			cnt_j++;
-		}
-		B(cnt_i) = Bi(i);
-		cnt_i++;
-	}
-
-	double *x = (double *)calloc(sizeof(double), m);
-	solve_eq(A.get_ptr(), B.get_ptr(), x, m);
-
-	cnt_i = 0;
-	for (int i = 0; i < n; i++) {
-		if (u_right[i] == 1) {
-			Qs[L - 1](i) = x[cnt_i];
-			cnt_i++;
-		} else
-			Qs[L - 1](i) = P_RIGHT;
-	}
-
-	free(x);
-	free(u_right);
-};
-
-
 void progonka::calculate(const std::vector<vector>& u, std::vector<vector>& u1)
 {
 //	assert(A_ini);
@@ -181,17 +86,12 @@ void progonka::calculate(const std::vector<vector>& u, std::vector<vector>& u1)
 	assert(B);
 	assert(C);
 
-	/* right part */
-	vector Fi(n, 1);
-
 	/* coefficients */
 	std::vector<matrix> Ps(L);
 	std::vector<vector> Qs(L);
 	matrix G(n);
 
-
 	std::vector<vector> F(L);
-
 
 	/* due to the specific realization of std containers */
 	for (int i = 0; i < L; i++) {
@@ -218,7 +118,7 @@ void progonka::calculate(const std::vector<vector>& u, std::vector<vector>& u1)
 	for (int i = 2; i < L; i++) {
 		G = (*B - (*A * Ps[i - 1])).inverse();
 
-		Ps[i] = (G * (*C));
+		Ps[i] = G * (*C);
 		Qs[i] = G * ((*A * Qs[i - 1]) - F[i - 1]);
 	}
 

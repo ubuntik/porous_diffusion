@@ -2,10 +2,22 @@ CC = g++
 HOME = /Users/admin/Documents/Schlum/
 CFLAGS = -g -llapack
 
-all: main
+all: simple_ODE compare check direct tracer
 
-main:
-	$(CC) lalgebra.cpp solvers.cpp vtk.cpp main.cpp $(CFLAGS) -o main
+simple_ODE:
+	$(CC) lalgebra.cpp solvers.cpp vtk.cpp simple_ODE.cpp $(CFLAGS) -o simple_ODE
+
+compare:
+	$(CC) lalgebra.cpp solvers.cpp vtk.cpp compare.cpp $(CFLAGS) -o compare
+
+check:
+	$(CC) lalgebra.cpp solvers.cpp vtk.cpp check.cpp $(CFLAGS) -o check
+
+direct:
+	$(CC) lalgebra.cpp solvers.cpp vtk.cpp direct.cpp $(CFLAGS) -o direct
+
+tracer:
+	$(CC) lalgebra.cpp solvers.cpp vtk.cpp tracer.cpp $(CFLAGS) -o tracer
 
 clean:
-	rm -rf main main.dSYM res; mkdir res
+	rm -rf simple_ODE compare check direct tracer *.dSYM res; mkdir res
