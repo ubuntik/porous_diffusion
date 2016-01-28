@@ -41,7 +41,7 @@ void start_cond_1(std::vector<vector>& u)
 	for (int j = 0; j < n; j++) {
 		u.at(0)(j) = P_LEFT;
 		for (int i = 1; i < L - 1; i++)
-			u.at(i)(j) = START;
+			u.at(i)(j) = 1;
 		u.at(L - 1)(j) = P_RIGHT;
 	}
 };
@@ -54,6 +54,24 @@ void start_cond(std::vector<vector>& u)
 		u.at(L - 1)(i) = P_RIGHT;
 	}
 };
+
+void check_progonka(uint n, std::vector<vector>& u, std::vector<vector>& u1)
+{
+	start_cond(u);
+	progonka method(n);
+
+	std::cout << "was" << std::endl;
+	for (int i = 0; i < L; i++)
+		u[i].print();
+
+	method.calculate(u, u1);
+
+	std::cout << "now" << std::endl;
+	for (int i = 0; i < L; i++)
+		u1[i].print();
+
+	// check
+}
 
 void compare_accurate(uint n, std::vector<vector>& u, std::vector<vector>& u1)
 {
@@ -238,8 +256,8 @@ void tracer_problem(uint n, std::vector<vector>& p, std::vector<vector>& p1)
 int main(int argc, char **argv)
 {
 	// the problem size
-	uint n = power(P, GAMMA - 1);
-
+	//uint n = power(P, GAMMA - 1);
+	uint n = 2;
 	std::vector<vector> u(L);
 	std::vector<vector> u1(L);
 
@@ -256,7 +274,8 @@ int main(int argc, char **argv)
 //	direct_problem(n, u, u1);
 //	simple_ODE(n, u, u1);
 //	compare_accurate(n, u, u1);
-	tracer_problem(n, u, u1);
+//	tracer_problem(n, u, u1);
+	check_progonka(n, u, u1);
 
 	std::cout << "DONE" << std::endl;
 	return 0;

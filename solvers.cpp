@@ -19,7 +19,7 @@ progonka::progonka(uint n_size)
 	n = n_size;
 	assert(n >= 0);
 
-	A_ini = new matrix(n, 1.0);
+/*	A_ini = new matrix(n, 1.0);
 	A = new matrix(n);
 	B = new matrix(n);
 	C = new matrix(n);
@@ -27,7 +27,7 @@ progonka::progonka(uint n_size)
 	matrix K_ini(n);
 	get_K(K_ini);
 	get_D(D_ini);
-
+*/
 #if 0
 	for (int j = 0; j < n; j++) {
 		for (int i = 0; i < n; i++) {
@@ -42,7 +42,7 @@ progonka::progonka(uint n_size)
 		}
 	}
 #endif
-
+/*
 	std::cout << "Initian matrix (A, K, D):" << std::endl;
 	(*A_ini).print();
 	std::cout << "******************" << std::endl;
@@ -53,6 +53,19 @@ progonka::progonka(uint n_size)
 	*A = K_ini * (-1.0 / h / h);
 	*B = ((*A_ini) * (1.0 / t)) + K_ini * (2.0 / h / h) + D_ini;
 	*C = K_ini * (-1.0 / h / h);
+*/
+
+	A = new matrix(n, 1);
+	B = new matrix(n, -3);
+	C = new matrix(n, 2);
+	std::cout << "******************" << std::endl;
+	A->print();
+	std::cout << "******************" << std::endl;
+	B->print();
+	std::cout << "******************" << std::endl;
+	C->print();
+	std::cout << "******************" << std::endl;
+
 };
 
 progonka::~progonka()
@@ -66,11 +79,13 @@ progonka::~progonka()
 
 void progonka::left_edge(std::vector<matrix>& Ps, std::vector<vector>& Qs)
 {
-	uint n = Ps[0].size();
+	uint n = Ps[1].size();
 	uint *u_left = (uint *)calloc(sizeof(uint), n);
 	get_left_edge(u_left);
 
 	for (int i = 0; i < n; i++) {
+//		Ps[1](i, i) = (u_left[i] == 1) ? 1 : 0;
+//		Qs[1](i) = (u_left[i] == 1) ? 0 : P_LEFT;
 		Ps[0](i, i) = (u_left[i] == 1) ? 1 : 0;
 		Qs[0](i) = (u_left[i] == 1) ? 0 : P_LEFT;
 	}
@@ -80,7 +95,7 @@ void progonka::left_edge(std::vector<matrix>& Ps, std::vector<vector>& Qs)
 
 void progonka::right_edge(std::vector<matrix>& Ps, std::vector<vector>& Qs)
 {
-	uint n = Ps[0].size();
+	uint n = Ps[L - 2].size();
 	uint *u_right = (uint *)calloc(sizeof(uint), n);
 	get_right_edge(u_right);
 
@@ -161,7 +176,7 @@ void progonka::right_edge(std::vector<matrix>& Ps, std::vector<vector>& Qs)
 
 void progonka::calculate(const std::vector<vector>& u, std::vector<vector>& u1)
 {
-	assert(A_ini);
+//	assert(A_ini);
 	assert(A);
 	assert(B);
 	assert(C);
@@ -174,32 +189,64 @@ void progonka::calculate(const std::vector<vector>& u, std::vector<vector>& u1)
 	std::vector<vector> Qs(L);
 	matrix G(n);
 
+
+	std::vector<vector> F(L);
+
+
 	/* due to the specific realization of std containers */
 	for (int i = 0; i < L; i++) {
 		Ps[i].init(n);
 		Qs[i].init(n);
 	}
 
+	F[0].init(n, 1);
+	F[1].init(n, 1);
+	F[2].init(n, 1);
+	F[3].init(n, -3);
+	F[4].init(n, -1);
+	F[5].init(n, -1);
+	F[6].init(n, -1);
+	F[7].init(n, 1);
+
 	/* edge conditions */
-	left_edge(Ps, Qs);
+//	left_edge(Ps, Qs);
+
+	Ps[1] = ((*B) * (-1)).inverse() * (*C);
+	Qs[1] = (*B).inverse() * F[0];
+	std::cout << "Ps[1]" << std::endl;
+	Ps[1].print();
+	std::cout << "Qs[1]" << std::endl;
+	Qs[1].print();
 
 	/* There */
-	for (int i = 1; i < L - 1; i++) {
-		Fi = ((*A_ini) * (1.0 / t)) * u[i];
-		G = ((*A * Ps[i - 1]) + *B).inverse();
+	for (int i = 2; i < L; i++) {
+//	for (int i = 2; i < L - 1; i++) {
+//		Fi = ((*A_ini) * (1.0 / t)) * u[i];
+		Fi = F[i - 1];
+		G = ((*B) * (-1) - (*A * Ps[i - 1])).inverse();
 
-		Ps[i] = (G * (*C)) * (-1);
-		Qs[i] = G * (Fi - (*A * Qs[i - 1]));
+		Ps[i] = (G * (*C));
+		Qs[i] = G * ((*A * Qs[i - 1]) - Fi);
+
+		std::cout << "Ps[" << i << "]" << std::endl;
+		Ps[i].print();
+		std::cout << "Qs[" << i << "]" << std::endl;
+		Qs[i].print();
+
 	}
 
 	/* edge conditions */
-	right_edge(Ps, Qs);
+//	right_edge(Ps, Qs);
 
-	u1[L - 1] = Qs[L - 1];
+	G = ((*B) * (-1) - (*A * Ps[L - 1])).inverse();
+	u1[L - 1] = G * ((*A * Qs[L - 1]) - F[L - 1]);
+
+	std::cout << "Qs[8]" << std::endl;
+	u1[L - 1].print();
 
 	/* and Back Again */
 	for (int i = L - 2; i >= 0; i--) {
-		u1[i] = (Ps[i] * u1[i + 1]) + Qs[i];
+		u1[i] = (Ps[i + 1] * u1[i + 1]) + Qs[i + 1];
 	}
 
 	Ps.clear();

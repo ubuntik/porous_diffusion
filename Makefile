@@ -1,8 +1,6 @@
 CC = g++
 HOME = /Users/admin/Documents/Schlum/
-CFLAGS = -g -llapack -lblas
-#BLAS = ${HOME}/OpenBLAS/
-#CFLAGS = -I${BLAS} -L${BLAS} -lopenblas
+CFLAGS = -g -llapack
 
 all: main
 

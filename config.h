@@ -15,11 +15,12 @@
 // Number of porosity levels
 #define GAMMA 4
 // Length of considerable sample (1 meter)
-#define LENGTH 500
+#define LENGTH 250
 // Step by space
 #define h 1.0
 // Number of steps by space
-#define L (LENGTH / h)
+//#define L (LENGTH / h)
+#define L 8
 // Considerable time
 #define TIME 8000
 // Step by time
@@ -27,7 +28,7 @@
 // coefficient for tracer calculation (0 <= THETA <= 1)
 #define THETA 0.5
 // curant
-#define CURANT 0.00001
+#define CURANT 0.0001
 // v = - (K / eta)(dP/dx)
 #define ETA 1
 
