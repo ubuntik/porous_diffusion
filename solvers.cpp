@@ -56,7 +56,7 @@ progonka::progonka(uint n_size)
 */
 
 	A = new matrix(n, 1);
-	B = new matrix(n, -3);
+	B = new matrix(n, 3);
 	C = new matrix(n, 2);
 	std::cout << "******************" << std::endl;
 	A->print();
@@ -211,28 +211,15 @@ void progonka::calculate(const std::vector<vector>& u, std::vector<vector>& u1)
 	/* edge conditions */
 //	left_edge(Ps, Qs);
 
-	Ps[1] = ((*B) * (-1)).inverse() * (*C);
-	Qs[1] = (*B).inverse() * F[0];
-	std::cout << "Ps[1]" << std::endl;
-	Ps[1].print();
-	std::cout << "Qs[1]" << std::endl;
-	Qs[1].print();
+	Ps[1] = (*B).inverse() * (*C);
+	Qs[1] = (*B).inverse() * F[0] * (-1);
 
 	/* There */
 	for (int i = 2; i < L; i++) {
-//	for (int i = 2; i < L - 1; i++) {
-//		Fi = ((*A_ini) * (1.0 / t)) * u[i];
-		Fi = F[i - 1];
-		G = ((*B) * (-1) - (*A * Ps[i - 1])).inverse();
+		G = (*B - (*A * Ps[i - 1])).inverse();
 
 		Ps[i] = (G * (*C));
-		Qs[i] = G * ((*A * Qs[i - 1]) - Fi);
-
-		std::cout << "Ps[" << i << "]" << std::endl;
-		Ps[i].print();
-		std::cout << "Qs[" << i << "]" << std::endl;
-		Qs[i].print();
-
+		Qs[i] = G * ((*A * Qs[i - 1]) - F[i - 1]);
 	}
 
 	/* edge conditions */
@@ -240,9 +227,6 @@ void progonka::calculate(const std::vector<vector>& u, std::vector<vector>& u1)
 
 	G = ((*B) * (-1) - (*A * Ps[L - 1])).inverse();
 	u1[L - 1] = G * ((*A * Qs[L - 1]) - F[L - 1]);
-
-	std::cout << "Qs[8]" << std::endl;
-	u1[L - 1].print();
 
 	/* and Back Again */
 	for (int i = L - 2; i >= 0; i--) {

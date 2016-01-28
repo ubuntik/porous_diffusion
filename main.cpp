@@ -70,7 +70,9 @@ void check_progonka(uint n, std::vector<vector>& u, std::vector<vector>& u1)
 	for (int i = 0; i < L; i++)
 		u1[i].print();
 
-	// check
+	std::cout << "should be:" << std::endl;
+	std::cout << "( 1 1 )\n( 2 2 )\n( 3 3 )\n( 4 4 )" << std::endl;
+	std::cout << "( 3 3 )\n( 2 2 )\n( 1 1 )\n( 0 0 )" << std::endl;
 }
 
 void compare_accurate(uint n, std::vector<vector>& u, std::vector<vector>& u1)
