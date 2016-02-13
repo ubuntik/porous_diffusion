@@ -14,12 +14,13 @@
 #include "lalgebra.h"
 #include "matrixes.h"
 
-#undef L
-#define L 8
+#define ETA 1
+#define h 1.0
 
-progonka::progonka(uint n_size)
+progonka::progonka(uint n_size, uint length)
 {
 	n = n_size;
+	l = length;
 	assert(n >= 0);
 
 /*	A_ini = new matrix(n, 1.0);
@@ -34,13 +35,13 @@ progonka::progonka(uint n_size)
 #if 0
 	for (int j = 0; j < n; j++) {
 		for (int i = 0; i < n; i++) {
-			K_ini(i, j) = (i == j) ? K_DIAG : K_ELEM;
+			K_ini(i, j) = (i == j) ? K_DIAG : K_ElEM;
 			D_ini(i, j) = (i == j) ? 1 : 0;
 
 			/* for start conditions != 0
 			 * It must decrease exponentially
 			 */
-//			D_ini(i, j) = (i == j) ? K_DIAG : K_ELEM;
+//			D_ini(i, j) = (i == j) ? K_DIAG : K_ElEM;
 //			K_ini(i, j) = 0;
 		}
 	}
@@ -87,14 +88,14 @@ void progonka::calculate(const std::vector<vector>& u, std::vector<vector>& u1)
 	assert(C);
 
 	/* coefficients */
-	std::vector<matrix> Ps(L);
-	std::vector<vector> Qs(L);
+	std::vector<matrix> Ps(l);
+	std::vector<vector> Qs(l);
 	matrix G(n);
 
-	std::vector<vector> F(L);
+	std::vector<vector> F(l);
 
 	/* due to the specific realization of std containers */
-	for (int i = 0; i < L; i++) {
+	for (int i = 0; i < l; i++) {
 		Ps[i].init(n);
 		Qs[i].init(n);
 	}
@@ -115,7 +116,7 @@ void progonka::calculate(const std::vector<vector>& u, std::vector<vector>& u1)
 	Qs[1] = (*B).inverse() * F[0] * (-1);
 
 	/* There */
-	for (int i = 2; i < L; i++) {
+	for (int i = 2; i < l; i++) {
 		G = (*B - (*A * Ps[i - 1])).inverse();
 
 		Ps[i] = G * (*C);
@@ -125,11 +126,11 @@ void progonka::calculate(const std::vector<vector>& u, std::vector<vector>& u1)
 	/* edge conditions */
 //	right_edge(Ps, Qs);
 
-	G = ((*B) * (-1) - (*A * Ps[L - 1])).inverse();
-	u1[L - 1] = G * ((*A * Qs[L - 1]) - F[L - 1]);
+	G = ((*B) * (-1) - (*A * Ps[l - 1])).inverse();
+	u1[l - 1] = G * ((*A * Qs[l - 1]) - F[l - 1]);
 
 	/* and Back Again */
-	for (int i = L - 2; i >= 0; i--) {
+	for (int i = l - 2; i >= 0; i--) {
 		u1[i] = (Ps[i + 1] * u1[i + 1]) + Qs[i + 1];
 	}
 
@@ -137,9 +138,10 @@ void progonka::calculate(const std::vector<vector>& u, std::vector<vector>& u1)
 	Qs.clear();
 };
 
-corner::corner(uint n_size)
+corner::corner(uint n_size, uint length)
 {
 	n = n_size;
+	l = length;
 	assert(n >= 0);
 
 	matrix K_ini(n);
@@ -175,7 +177,7 @@ void corner::right_edge(std::vector<vector>& C1)
 	/* for all classes of pores: dC/dx = 0 */
 	uint n = C1[0].size();
 	for (int i = 0; i < n; i++)
-		C1[L](i) = C1[L - 1](i);
+		C1[l](i) = C1[l - 1](i);
 };
 
 void corner::calculate(	const std::vector<vector>& v_med,
@@ -183,7 +185,6 @@ void corner::calculate(	const std::vector<vector>& v_med,
 			const std::vector<vector>& C,
 			std::vector<vector>& C1, double dt)
 {
-	uint n = power(P, GAMMA - 1);
 	vector v(n);
 	vector crt(n);
 	vector crt_1(n);
@@ -191,7 +192,7 @@ void corner::calculate(	const std::vector<vector>& v_med,
 
 	left_edge(C1);
 
-	for (int x = 1; x < L; x++) {
+	for (int x = 1; x < l; x++) {
 		/* split on physical processes */
 		/* 1. calculate dC/dt + U dC/dx = 0 */
 		v = (*K) * v_med[x];

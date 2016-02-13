@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "lalgebra.h"
+#include "../lalgebra.h"
 
 int main()
 {

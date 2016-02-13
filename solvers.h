@@ -11,12 +11,11 @@
 #define _SLB_SOLVERS_LIB
 
 #include "lalgebra.h"
-#include "config.h"
 
 class progonka
 {
 public:
-	progonka(uint n_size);
+	progonka(uint n_size, uint length);
 	~progonka();
 	void calculate(const std::vector<vector>& u, std::vector<vector>& u1);
 private:
@@ -31,7 +30,7 @@ private:
 class corner
 {
 public:
-	corner(uint n_size);
+	corner(uint n_size, uint length);
 	~corner();
 	void calculate( const std::vector<vector>& v_med,
 			const std::vector<vector>& p,
@@ -41,6 +40,7 @@ private:
 	void left_edge(std::vector<vector>& C1);
 	void right_edge(std::vector<vector>& C1);
 	uint n;
+	uint l;
 	matrix *K;
 	matrix *D;
 };

@@ -9,6 +9,7 @@
 #include <math.h>
 
 #include "vtk.h"
+#include "config.h"
 
 void write_to_vtk1(std::vector<vector>& u, const char *path, uint n)
 {

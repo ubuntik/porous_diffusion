@@ -2,16 +2,13 @@ CC = g++
 HOME = /Users/admin/Documents/Schlum/
 CFLAGS = -g -llapack
 
-all: simple_ODE compare check direct tracer
+all: simple_ODE compare direct tracer
 
 simple_ODE:
 	$(CC) lalgebra.cpp solvers.cpp vtk.cpp simple_ODE.cpp $(CFLAGS) -o simple_ODE
 
 compare:
 	$(CC) lalgebra.cpp solvers.cpp vtk.cpp compare.cpp $(CFLAGS) -o compare
-
-check:
-	$(CC) lalgebra.cpp solvers.cpp vtk.cpp check.cpp $(CFLAGS) -o check
 
 direct:
 	$(CC) lalgebra.cpp solvers.cpp vtk.cpp direct.cpp $(CFLAGS) -o direct

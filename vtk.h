@@ -10,7 +10,6 @@
 
 #include <vector>
 #include "lalgebra.h"
-#include "config.h"
 
 #define START 1
 

@@ -11,12 +11,14 @@
 #include <math.h>
 #include <assert.h>
 
-#include "lalgebra.h"
-#include "solvers.h"
-#include "vtk.h"
-#include "config.h"
+#include "../lalgebra.h"
+#include "../solvers.h"
+#include "../vtk.h"
 
-#undef L
+// edge conditions
+#define P_LEFT 1
+#define P_RIGHT 0
+
 #define L 8
 
 void start_cond(std::vector<vector>& u)
@@ -31,7 +33,7 @@ void start_cond(std::vector<vector>& u)
 void check_progonka(uint n, std::vector<vector>& u, std::vector<vector>& u1)
 {
 	start_cond(u);
-	progonka method(n);
+	progonka method(n, L);
 
 	std::cout << "was" << std::endl;
 	for (int i = 0; i < L; i++)
@@ -62,8 +64,7 @@ int main(int argc, char **argv)
 	}
 
 	std::cout << "The dimension of prodlem: " << n << std::endl;
-	std::cout << "The length = " << L << ", the time = " << TIME << std::endl;
-	std::cout << "Space step = " << h << ", time step = " << t << std::endl;
+	std::cout << "The length = " << L << std::endl;
 
 	check_progonka(n, u, u1);
 
