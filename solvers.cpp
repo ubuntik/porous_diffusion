@@ -17,82 +17,27 @@
 #define ETA 1
 #define h 1.0
 
-progonka::progonka(uint n_size, uint length)
+progonka::progonka(uint n_size, uint length,
+		const std::vector<matrix> &a,
+		const std::vector<matrix> &b,
+		const std::vector<matrix> &c,
+		const std::vector<vector> &f)
 {
 	n = n_size;
 	l = length;
 	assert(n >= 0);
-
-/*	A_ini = new matrix(n, 1.0);
-	A = new matrix(n);
-	B = new matrix(n);
-	C = new matrix(n);
-	matrix D_ini(n);
-	matrix K_ini(n);
-	get_K(K_ini);
-	get_D(D_ini);
-*/
-#if 0
-	for (int j = 0; j < n; j++) {
-		for (int i = 0; i < n; i++) {
-			K_ini(i, j) = (i == j) ? K_DIAG : K_ElEM;
-			D_ini(i, j) = (i == j) ? 1 : 0;
-
-			/* for start conditions != 0
-			 * It must decrease exponentially
-			 */
-//			D_ini(i, j) = (i == j) ? K_DIAG : K_ElEM;
-//			K_ini(i, j) = 0;
-		}
-	}
-#endif
-/*
-	std::cout << "Initian matrix (A, K, D):" << std::endl;
-	(*A_ini).print();
-	std::cout << "******************" << std::endl;
-	K_ini.print();
-	std::cout << "******************" << std::endl;
-	D_ini.print();
-
-	*A = K_ini * (-1.0 / h / h);
-	*B = ((*A_ini) * (1.0 / t)) + K_ini * (2.0 / h / h) + D_ini;
-	*C = K_ini * (-1.0 / h / h);
-*/
-
-	A = new matrix(n, 1);
-	B = new matrix(n, 3);
-	C = new matrix(n, 2);
-	std::cout << "******************" << std::endl;
-	A->print();
-	std::cout << "******************" << std::endl;
-	B->print();
-	std::cout << "******************" << std::endl;
-	C->print();
-	std::cout << "******************" << std::endl;
-
+	A = a;
+	B = b;
+	C = c;
+	F = f;
 };
 
-progonka::~progonka()
+void progonka::calculate(std::vector<vector>& u1)
 {
-	delete A_ini;
-	delete A;
-	delete B;
-	delete C;
-};
-
-void progonka::calculate(const std::vector<vector>& u, std::vector<vector>& u1)
-{
-//	assert(A_ini);
-	assert(A);
-	assert(B);
-	assert(C);
-
 	/* coefficients */
 	std::vector<matrix> Ps(l);
 	std::vector<vector> Qs(l);
 	matrix G(n);
-
-	std::vector<vector> F(l);
 
 	/* due to the specific realization of std containers */
 	for (int i = 0; i < l; i++) {
@@ -100,38 +45,34 @@ void progonka::calculate(const std::vector<vector>& u, std::vector<vector>& u1)
 		Qs[i].init(n);
 	}
 
-	F[0].init(n, 1);
-	F[1].init(n, 1);
-	F[2].init(n, 1);
-	F[3].init(n, -3);
-	F[4].init(n, -1);
-	F[5].init(n, -1);
-	F[6].init(n, -1);
-	F[7].init(n, 1);
-
-	/* edge conditions */
-//	left_edge(Ps, Qs);
-
-	Ps[1] = (*B).inverse() * (*C);
-	Qs[1] = (*B).inverse() * F[0] * (-1);
+	// Ps[0] and Qs[0] are not used
+	Ps[1] = B[0].inverse() * C[0];
+	Qs[1] = B[0].inverse() * F[0] * (-1);
 
 	/* There */
 	for (int i = 2; i < l; i++) {
-		G = (*B - (*A * Ps[i - 1])).inverse();
+		G = (B[i - 1] - (A[i - 1] * Ps[i - 1])).inverse();
 
-		Ps[i] = G * (*C);
-		Qs[i] = G * ((*A * Qs[i - 1]) - F[i - 1]);
+		Ps[i] = G * C[i - 1];
+		Qs[i] = G * ((A[i - 1] * Qs[i - 1]) - F[i - 1]);
 	}
 
-	/* edge conditions */
-//	right_edge(Ps, Qs);
+	G = (B[l - 1] * (-1) - (A[l - 1] * Ps[l - 1])).inverse();
 
-	G = ((*B) * (-1) - (*A * Ps[l - 1])).inverse();
-	u1[l - 1] = G * ((*A * Qs[l - 1]) - F[l - 1]);
+//	for unit_tests check.cpp without edge conditions
+//	u1[l - 1] = G * ((A[l - 1] * Qs[l - 1]) - F[l - 1]);
+
+	u1[l] = G * ((A[l - 1] * Qs[l - 1]) - F[l - 1]);
 
 	/* and Back Again */
+
+//	for unit_tests check.cpp without edge conditions
+/*
 	for (int i = l - 2; i >= 0; i--) {
 		u1[i] = (Ps[i + 1] * u1[i + 1]) + Qs[i + 1];
+*/
+	for (int i = l - 1; i > 0; i--) {
+		u1[i] = (Ps[i] * u1[i + 1]) + Qs[i];
 	}
 
 	Ps.clear();

@@ -57,7 +57,7 @@ void compare_accurate(uint n, std::vector<vector>& u, std::vector<vector>& u1)
 	char buf[256];
 	start_cond_1(u);
 
-	progonka method(n);
+	progonka method(n, L);
 
 	for (int i = 1; i < ((double)TIME / t); i++) {
 		if (i % PRNT == 0) {

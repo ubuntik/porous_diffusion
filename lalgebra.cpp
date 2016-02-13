@@ -128,8 +128,8 @@ void matrix::init(uint n_size, ptype a)
 
 matrix::~matrix()
 {
-	if (array)
-		free(array);
+//	if (array)
+//		free(array);
 };
 
 void matrix::print()
@@ -378,8 +378,8 @@ void vector::init(uint n_size, ptype a)
 
 vector::~vector()
 {
-	if (array)
-		free(array);
+//	if (array)
+//		free(array);
 };
 
 void vector::print()

@@ -33,13 +33,35 @@ void start_cond(std::vector<vector>& u)
 void check_progonka(uint n, std::vector<vector>& u, std::vector<vector>& u1)
 {
 	start_cond(u);
-	progonka method(n, L);
 
 	std::cout << "was" << std::endl;
 	for (int i = 0; i < L; i++)
 		u[i].print();
 
-	method.calculate(u, u1);
+	// A(n) u(n - 1) - B(n) u(n) + C(n) u(n + 1) = F(n)
+	std::vector<matrix> A(L);
+	std::vector<matrix> B(L);
+	std::vector<matrix> C(L);
+	std::vector<vector> F(L);
+
+	for (int i = 0; i < L; i++) {
+		A[i].init(n, 1);
+		B[i].init(n, 3);
+		C[i].init(n, 2);
+	}
+
+	F[0].init(n, 1);
+	F[1].init(n, 1);
+	F[2].init(n, 1);
+	F[3].init(n, -3);
+	F[4].init(n, -1);
+	F[5].init(n, -1);
+	F[6].init(n, -1);
+	F[7].init(n, 1);
+
+	progonka method(n, L, A, B, C, F);
+
+	method.calculate(u1);
 
 	std::cout << "now" << std::endl;
 	for (int i = 0; i < L; i++)
@@ -48,6 +70,11 @@ void check_progonka(uint n, std::vector<vector>& u, std::vector<vector>& u1)
 	std::cout << "should be:" << std::endl;
 	std::cout << "( 1 1 )\n( 2 2 )\n( 3 3 )\n( 4 4 )" << std::endl;
 	std::cout << "( 3 3 )\n( 2 2 )\n( 1 1 )\n( 0 0 )" << std::endl;
+
+	A.clear();
+	B.clear();
+	C.clear();
+	F.clear();
 }
 
 int main(int argc, char **argv)
@@ -69,6 +96,9 @@ int main(int argc, char **argv)
 	check_progonka(n, u, u1);
 
 	std::cout << "DONE" << std::endl;
+
+	u.clear();
+	u1.clear();
 	return 0;
 }
 

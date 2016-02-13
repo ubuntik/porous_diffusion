@@ -14,15 +14,14 @@
 #include "lalgebra.h"
 #include "solvers.h"
 #include "vtk.h"
-#include "config.h"
 
 #define PRNT 1
-#undef TIME
-#define TIME 100
-#undef t
+#define TIME 10
 #define t 1
-#undef L
-#define L 100
+#define L 10
+#define h 1.0
+#define P_LEFT 1.0
+#define P_RIGHT 0.0
 
 void start_cond_1(std::vector<vector>& u)
 {
@@ -38,25 +37,56 @@ void start_cond_1(std::vector<vector>& u)
 void simple_ODE(uint n, std::vector<vector>& u, std::vector<vector>& u1)
 {
 	char buf[256];
+	double time = (double)TIME / t;
+	uint l = L - 2; // exept edge points
+	matrix Al(n, 1.0/t);
+	matrix K(n);
+	matrix D(n, 1);
+
 	/* This structure keep all data (not using in general) */
-	std::vector<std::vector<vector> > u_all((double)TIME / t, std::vector<vector>(L));
+	std::vector<std::vector<vector> > u_all(time, std::vector<vector>(L));
 
 	/* due to the specific realization of std containers */
-	for (int i = 0; i < ((double)TIME / t); i++)
+	for (int i = 0; i < time; i++)
 		for (int j = 0; j < L; j++)
 			u_all[i][j].init(n);
 
 	start_cond_1(u);
 
-	progonka method(n);
+	// A(n) u(n - 1) - B(n) u(n) + C(n) u(n + 1) = F(n)
+	std::vector<matrix> A(l);
+	std::vector<matrix> B(l);
+	std::vector<matrix> C(l);
+	std::vector<vector> F(l);
 
-	for (int i = 0; i < ((double)TIME / t); i++) {
+	for (int i = 0; i < l; i++) {
+		A[i].init(n);
+		A[i] = K * (1.0 / h / h);
+		B[i].init(n);
+		B[i] = Al + K * (2.0 / h / h) + D;
+		C[i].init(n);
+		C[i] = K * (1.0 / h / h);
+		F[i].init(n);
+	}
+	vector left(n, -P_LEFT / h / h);
+	vector right(n, -P_RIGHT / h / h);
+
+	progonka method(n, l, A, B, C, F);
+
+	for (int i = 0; i < time; i++) {
+		for (int i = 0; i < l; i++)
+			F[i] = Al * u[i] * (-1);
+		F[0] = F[0] + K * left;
+		F[l - 1] = F[l - 1] + K * right;
+
+		u1[0] = u[0];		// P_LEFT
+		u1[L - 1] = u[L - 1];	// P_RIGHT
+		method.calculate(u1);
+
 		if (i % PRNT == 0) {
 			sprintf(buf, "res/data_%06d.vtk", i);
-			write_to_vtk1(u, buf, n);
+			write_to_vtk1(u, buf, n, L);
 		}
-
-		method.calculate(u, u1);
 
 		u = u1;
 		u_all[i] = u1;
@@ -65,9 +95,9 @@ void simple_ODE(uint n, std::vector<vector>& u, std::vector<vector>& u1)
 	/* This printing is u(TIME) throughout Length exept edges
 	 * (not using in general)
 	 */
-	for (int i = 1; i < L - 1; i++) {
+	for (int i = 0; i < L; i++) {
 		sprintf(buf, "res/time_%06d.vtk", i);
-		write_to_vtk3(u_all, buf, n, i);
+		write_to_vtk3(u_all, buf, n, i, time);
 	}
 }
 
