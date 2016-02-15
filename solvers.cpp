@@ -17,22 +17,18 @@
 #define ETA 1
 #define h 1.0
 
-progonka::progonka(uint n_size, uint length,
-		const std::vector<matrix> &a,
-		const std::vector<matrix> &b,
-		const std::vector<matrix> &c,
-		const std::vector<vector> &f)
+progonka::progonka(uint n_size, uint length)
 {
 	n = n_size;
 	l = length;
 	assert(n >= 0);
-	A = a;
-	B = b;
-	C = c;
-	F = f;
 };
 
-void progonka::calculate(std::vector<vector>& u1)
+void progonka::calculate(std::vector<vector>& u1,
+		std::vector<matrix> &A,
+		std::vector<matrix> &B,
+		std::vector<matrix> &C,
+		std::vector<vector> &F)
 {
 	/* coefficients */
 	std::vector<matrix> Ps(l);
@@ -57,7 +53,7 @@ void progonka::calculate(std::vector<vector>& u1)
 		Qs[i] = G * ((A[i - 1] * Qs[i - 1]) - F[i - 1]);
 	}
 
-	G = (B[l - 1] * (-1) - (A[l - 1] * Ps[l - 1])).inverse();
+	G = (B[l - 1] - (A[l - 1] * Ps[l - 1])).inverse();
 
 //	for unit_tests check.cpp without edge conditions
 //	u1[l - 1] = G * ((A[l - 1] * Qs[l - 1]) - F[l - 1]);

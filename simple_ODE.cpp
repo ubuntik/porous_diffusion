@@ -16,9 +16,9 @@
 #include "vtk.h"
 
 #define PRNT 1
-#define TIME 10
+#define TIME 100
 #define t 1
-#define L 10
+#define L 100
 #define h 1.0
 #define P_LEFT 1.0
 #define P_RIGHT 0.0
@@ -68,20 +68,20 @@ void simple_ODE(uint n, std::vector<vector>& u, std::vector<vector>& u1)
 		C[i] = K * (1.0 / h / h);
 		F[i].init(n);
 	}
-	vector left(n, -P_LEFT / h / h);
-	vector right(n, -P_RIGHT / h / h);
+	vector left(n, P_LEFT);
+	vector right(n, P_RIGHT);
 
-	progonka method(n, l, A, B, C, F);
+	progonka method(n, l);
 
 	for (int i = 0; i < time; i++) {
 		for (int i = 0; i < l; i++)
-			F[i] = Al * u[i] * (-1);
-		F[0] = F[0] + K * left;
-		F[l - 1] = F[l - 1] + K * right;
+			F[i] = Al * u[i + 1] * (-1);	// u[i + 1] -> start from 1-st index, not 0
+		F[0] = F[0] + K * left * (-1.0 / h / h);
+		F[l - 1] = F[l - 1] + K * right * (-1.0 / h / h);
 
-		u1[0] = u[0];		// P_LEFT
-		u1[L - 1] = u[L - 1];	// P_RIGHT
-		method.calculate(u1);
+		method.calculate(u1, A, B, C, F);
+		u1[0] = left;
+		u1[L - 1] = right;
 
 		if (i % PRNT == 0) {
 			sprintf(buf, "res/data_%06d.vtk", i);

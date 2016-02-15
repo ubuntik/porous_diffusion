@@ -15,18 +15,18 @@
 class progonka
 {
 public:
-	progonka(uint n_size, uint length,
-		const std::vector<matrix> &a, const std::vector<matrix> &b,
-		const std::vector<matrix> &c, const std::vector<vector> &f);
+	progonka(uint n_size, uint length);
 	~progonka() {};
-	void calculate(std::vector<vector>& u1);
+	void calculate(std::vector<vector>& u1,
+		std::vector<matrix> &a, std::vector<matrix> &b,
+		std::vector<matrix> &c, std::vector<vector> &f);
 private:
 	uint n;
 	uint l;
-	std::vector<matrix> A;
-	std::vector<matrix> B;
-	std::vector<matrix> C;
-	std::vector<vector> F;
+	//std::vector<matrix> A;
+	//std::vector<matrix> B;
+	//std::vector<matrix> C;
+	//std::vector<vector> F;
 };
 
 class corner
