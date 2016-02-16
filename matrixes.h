@@ -61,31 +61,31 @@ static void get_D(matrix &D)
 	D(4, 7) = -0.00041; D(5, 7) = -0.00056; D(6, 7) = -0.00071; D(7, 7) = 0.00445;
 }
 
-static void get_left_edge(uint* u_left)
+static void get_left_edge(vector &left)
 {
 
-	u_left[0] = 1;
-//	u_left[1] = 1;
-	u_left[2] = 1;
-//	u_left[3] = 1;
-	u_left[4] = 1;
-//	u_left[5] = 1;
-	u_left[6] = 1;
-//	u_left[7] = 1;
+//	left(0) = 1;
+	left(1) = 1;
+//	left(2) = 1;
+	left(3) = 1;
+//	left(4) = 1;
+	left(5) = 1;
+//	left(6) = 1;
+	left(7) = 1;
 
 }
 
-static void get_right_edge(uint* u_right)
+static void get_right_edge(vector &right)
 {
 
-	u_right[0] = 1;
-	u_right[1] = 1;
-	u_right[2] = 1;
-	u_right[3] = 1;
-	u_right[4] = 1;
-	u_right[5] = 1;
-	u_right[6] = 1;
-	u_right[7] = 1;
+	right(0) = 1;
+	right(1) = 1;
+	right(2) = 1;
+	right(3) = 1;
+	right(4) = 1;
+	right(5) = 1;
+	right(6) = 1;
+	right(7) = 1;
 
 }
 

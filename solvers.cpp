@@ -100,13 +100,11 @@ corner::~corner()
 void corner::left_edge(std::vector<vector>& C1)
 {
 	uint n = C1[0].size();
-	uint *u_left = (uint *)calloc(sizeof(uint), n);
-	get_left_edge(u_left);
+	vector left(n);
+	get_left_edge(left);
 
 	for (int i = 0; i < n; i++)
-		C1[0](i) = (u_left[i] == 1) ? 0 : 1;
-
-	free(u_left);
+		C1[0](i) = left(i) ? 0 : 1;
 };
 
 void corner::right_edge(std::vector<vector>& C1)
@@ -126,8 +124,6 @@ void corner::calculate(	const std::vector<vector>& v_med,
 	vector crt(n);
 	vector crt_1(n);
 	vector q(n);
-
-	left_edge(C1);
 
 	for (int x = 1; x < l; x++) {
 		/* split on physical processes */
@@ -157,8 +153,6 @@ void corner::calculate(	const std::vector<vector>& v_med,
 		}
 
 	}
-
-	right_edge(C1);
 };
 
 

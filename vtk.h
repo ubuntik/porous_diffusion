@@ -20,6 +20,6 @@ void write_to_vtk2(std::vector<vector>& u, const char *path, uint n, uint l, dou
 void write_to_vtk3(std::vector< std::vector<vector> >& u, const char *path, uint n, uint l, uint t);
 
 void write_to_vtk2d(std::vector<vector>& u, const char *path, const char *data,
-			const int N[2], const double o[2], const double hh[2]);
+			const int N[2], const double hh[2]);
 
 #endif // _SLB_VTKPRINT_LIB

@@ -22,7 +22,7 @@
 #define L 100
 #define h 1.0
 #define P_LEFT 1.0
-#define P_RIGHT 2.0
+#define P_RIGHT 0.0
 
 void start_cond(std::vector<vector>& u)
 {
