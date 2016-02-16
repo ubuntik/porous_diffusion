@@ -4,7 +4,10 @@
  * @author Anna Subbotina
  */
 
-void get_K(matrix &K)
+#ifndef _SLB_MATRIXES
+#define _SLB_MATRIXES
+
+static void get_K(matrix &K)
 {
 	K(0, 0) = 700.72; K(1, 0) = -90.791; K(2, 0) = -51.8508; K(3, 0) = -20.9356;
 	K(4, 0) = -16.6301; K(5, 0) = -36.7135; K(6, 0) = -12.6038; K(7, 0) = -11.0965;
@@ -58,3 +61,32 @@ static void get_D(matrix &D)
 	D(4, 7) = -0.00041; D(5, 7) = -0.00056; D(6, 7) = -0.00071; D(7, 7) = 0.00445;
 }
 
+static void get_left_edge(uint* u_left)
+{
+
+	u_left[0] = 1;
+//	u_left[1] = 1;
+	u_left[2] = 1;
+//	u_left[3] = 1;
+	u_left[4] = 1;
+//	u_left[5] = 1;
+	u_left[6] = 1;
+//	u_left[7] = 1;
+
+}
+
+static void get_right_edge(uint* u_right)
+{
+
+	u_right[0] = 1;
+	u_right[1] = 1;
+	u_right[2] = 1;
+	u_right[3] = 1;
+	u_right[4] = 1;
+	u_right[5] = 1;
+	u_right[6] = 1;
+	u_right[7] = 1;
+
+}
+
+#endif // _SLB_MATRIXES
