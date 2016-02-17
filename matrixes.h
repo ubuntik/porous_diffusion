@@ -63,7 +63,7 @@ static void get_D(matrix &D)
 
 static void get_left_edge(vector &left)
 {
-
+/*
 //	left(0) = 1;
 	left(1) = 1;
 //	left(2) = 1;
@@ -72,20 +72,20 @@ static void get_left_edge(vector &left)
 	left(5) = 1;
 //	left(6) = 1;
 	left(7) = 1;
-
+*/
 }
 
 static void get_right_edge(vector &right)
 {
 
 	right(0) = 1;
-	right(1) = 1;
+//	right(1) = 1;
 	right(2) = 1;
-	right(3) = 1;
+//	right(3) = 1;
 	right(4) = 1;
-	right(5) = 1;
+//	right(5) = 1;
 	right(6) = 1;
-	right(7) = 1;
+//	right(7) = 1;
 
 }
 

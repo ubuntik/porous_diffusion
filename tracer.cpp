@@ -16,15 +16,18 @@
 #include "vtk.h"
 #include "matrixes.h"
 
+// shift for tracer start conditions
+#define DIF 10
+
 #define PRNT 1
-#define TIME 10
+#define TIME 500
 #define t 1.0
-#define L 10
+#define L 200
 #define h 1.0
 #define P_LEFT 1.0
 #define P_RIGHT 0.0
 // coefficient for tracer calculation (0 <= THETA <= 1)
-#define THETA 0.5
+#define THETA 0 //0.5
 // curant
 #define CURANT 0.001
 
@@ -75,7 +78,7 @@ void start_cond_con(std::vector<vector>& C)
 	get_left_edge(left);
 	/* free edge -> close C=0, fixed edge -> pressure C=1 */
 	for (int i = 0; i < n; i++)
-		C.at(0)(i) = left(i) ? 0 : 1;
+		C.at(DIF)(i) = 1;
 };
 
 void tracer_problem(uint n, std::vector<vector>& p, std::vector<vector>& p1)
@@ -91,7 +94,7 @@ void tracer_problem(uint n, std::vector<vector>& p, std::vector<vector>& p1)
 
 	start_cond(p);
 
-	double hh[2] = {h, 1.0}; /* Шаг сетки */
+	double hh[2] = {h, 10.0}; /* Шаг сетки */
 	int N[2] = {L, n}; /* Число точек расчетной области по осям */
 
 	std::vector<vector> v_med(L + 1);
@@ -178,7 +181,7 @@ void tracer_problem(uint n, std::vector<vector>& p, std::vector<vector>& p1)
 		uint steps = (double)t / c_time + 1;
 
 		for (int i = 0; i < n; i++)
-			c1[0](i) = left(i) ? 0 : 1;
+			c1[0](i) = c1[1](i);	//left(i) ? 0 : 1;
 
 		for (int j = 0; j < steps; j++) {
 			turn.calculate(v_med, p1, c, c1, c_time);

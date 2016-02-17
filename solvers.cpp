@@ -129,6 +129,9 @@ void corner::calculate(	const std::vector<vector>& v_med,
 		/* split on physical processes */
 		/* 1. calculate dC/dt + U dC/dx = 0 */
 		v = (*K) * v_med[x];
+
+		
+
 		crt = C[x];
 		crt_1 = C[x + 1];
 		C1[x] = C[x];
