@@ -19,10 +19,10 @@
 // shift for tracer start conditions
 #define DIF 10
 
-#define PRNT 1
-#define TIME 500
+#define PRNT 10
+#define TIME 1000
 #define t 1.0
-#define L 200
+#define L 100
 #define h 1.0
 #define P_LEFT 1.0
 #define P_RIGHT 0.0

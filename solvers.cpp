@@ -89,6 +89,10 @@ corner::corner(uint n_size, uint length)
 
 	D = new matrix(n);
 	get_D(*D);
+
+	perm = new vector(n);
+	for (int i = 0; i < n; i++)
+		(*perm)(i) = (*K)(i, i);
 };
 
 corner::~corner()
@@ -128,9 +132,7 @@ void corner::calculate(	const std::vector<vector>& v_med,
 	for (int x = 1; x < l; x++) {
 		/* split on physical processes */
 		/* 1. calculate dC/dt + U dC/dx = 0 */
-		v = (*K) * v_med[x];
-
-		
+		v = (*perm).mult(v_med[x]);
 
 		crt = C[x];
 		crt_1 = C[x + 1];

@@ -41,6 +41,7 @@ private:
 	uint l;
 	matrix *K;
 	matrix *D;
+	vector *perm;
 };
 
 #endif // _SLB_SOLVERS_LIB
