@@ -16,5 +16,8 @@ direct:
 tracer:
 	$(CC) lalgebra.cpp solvers.cpp vtk.cpp tracer.cpp $(CFLAGS) -o tracer
 
+meso:
+	$(CC) lalgebra.cpp solvers.cpp vtk.cpp meso.cpp $(CFLAGS) -o meso
+
 clean:
-	rm -rf simple_ODE compare check direct tracer *.dSYM res; mkdir res
+	rm -rf simple_ODE compare check direct tracer meso *.dSYM res; mkdir res

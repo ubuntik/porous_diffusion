@@ -16,15 +16,17 @@
 #include "vtk.h"
 #include "matrixes.h"
 
+// shift for tracer start conditions
+#define DIF 10
+
 #define PRNT 10
-#define TIME 10000
+#define TIME 15000
+#define STABLE 1000
 #define t 1.0
-#define L 500
+#define L 200
 #define h 1.0
 #define P_LEFT 1.0
 #define P_RIGHT 0.0
-// coefficient for tracer calculation (0 <= THETA <= 1)
-#define THETA 0.5
 // curant
 #define CURANT 0.001
 
@@ -50,38 +52,77 @@ ptype maximum(std::vector<vector>& v_med)
 }
 
 void grad(uint n, std::vector<vector>& p,
-		  std::vector<vector>& p1,
 		  std::vector<vector>& v_med)
 {
-	vector v(n);
-	vector v1(n);
-
 	for (int i = 1; i < L; i++) {
-		v = p[i - 1] - p[i];
-		v = v * (1.0 / h);
-		v1 = p1[i - 1] - p1[i];
-		v1 = v1 * (1.0 / h);
-		v_med[i] = v1 * THETA + v * (1.0 - THETA);
+		v_med[i] = p[i - 1] - p[i];
+		v_med[i] = v_med[i] * (1.0 / h);
 	}
 	v_med[0] = v_med[1];
 	v_med[L] = v_med[L - 1];
 }
 
 
-void start_cond_con(std::vector<vector>& C)
+void start_cond_con(std::vector<vector>& C, uint dif)
 {
 	uint n = C[0].size();
 	vector left(n);
 	get_left_edge(left);
 	/* free edge -> close C=0, fixed edge -> pressure C=1 */
 	for (int i = 0; i < n; i++)
-		C.at(0)(i) = left(i) ? 0 : 1;;
+		C.at(dif)(i) = 1;
 };
 
-void tracer_problem(uint n, std::vector<vector>& p, std::vector<vector>& p1)
+void concentration(uint n, std::vector<vector>& p1, uint dif)
 {
 	char buf[256];
 	double time = (double)TIME / t;
+	corner turn(n, L);
+
+	double hh[2] = {h, 10.0}; /* Шаг сетки */
+	int N[2] = {L, n}; /* Число точек расчетной области по осям */
+
+	std::vector<vector> v_med(L + 1);
+	std::vector<vector> c(L + 1);
+	std::vector<vector> c1(L + 1);
+
+	/* due to the specific realization of std containers */
+	for (int i = 0; i <= L; i++) {
+		v_med[i].init(n);
+		c[i].init(n);
+		c1[i].init(n);
+	}
+
+	start_cond_con(c, dif);
+
+	grad(n, p1, v_med);
+	// prepare to calculate next step by corner
+	double c_time = (double)CURANT * h / maximum(v_med);
+	uint steps = (double)t / c_time + 1;
+
+	for (int j = 0; j < time; j++) {
+		for (int i = 0; i < n; i++)
+			c1[0](i) = 0; //c1[1](i);
+
+		turn.calculate(v_med, p1, c, c1, c_time);
+
+		for (int i = 0; i < n; i++)
+			c1[L](i) = c1[L - 1](i);
+
+		N[0] = L + 1;
+
+		if (j % 100 == 0) {
+			sprintf(buf, "res/%03d_%06d.vtk",dif, j);
+			write_to_vtk2d(c, buf, "concentration", N, hh);
+		}
+		c = c1;
+	}
+};
+
+void pressure(uint n, std::vector<vector>& p, std::vector<vector>& p1)
+{
+	char buf[256];
+	double stable = (double)STABLE / t;
 	uint l = L - 2; // exept edge points
 	matrix Al(n, 1.0/t);
 	matrix K(n);
@@ -93,21 +134,6 @@ void tracer_problem(uint n, std::vector<vector>& p, std::vector<vector>& p1)
 
 	double hh[2] = {h, 10.0}; /* Шаг сетки */
 	int N[2] = {L, n}; /* Число точек расчетной области по осям */
-
-	std::vector<vector> v_med(L + 1);
-	std::vector<vector> c(L + 1);
-	std::vector<vector> c1(L + 1);
-	std::vector<vector> c_slice(L + 1);
-
-	/* due to the specific realization of std containers */
-	for (int i = 0; i <= L; i++) {
-		v_med[i].init(n);
-		c[i].init(n);
-		c1[i].init(n);
-		c_slice[i].init(n);
-	}
-
-	start_cond_con(c);
 
 	vector left(n);
 	get_left_edge(left);
@@ -158,62 +184,29 @@ void tracer_problem(uint n, std::vector<vector>& p, std::vector<vector>& p1)
 	B[l - 1] = B[l - 1] - Br;
 
 	progonka gone(n, l);
-	corner turn(n, L);
 
-	for (int i = 0; i < time; i++) {
-		for (int i = 0; i < l; i++)
-			F[i] = Al * p[i + 1] * (-1);    // u[i + 1] -> start from 1-st index, not 0
+	// wait for pressure becomes stable
+	for (int i = 0; i < stable; i++) {
+		for (int j = 0; j < l; j++)
+			F[j] = Al * p[j + 1] * (-1);    // u[i + 1] -> start from 1-st index, not 0
 		F[0] = F[0] - Fl;
 		F[l - 1] = F[l - 1] - Fr;
 
 		gone.calculate(p1, A, B, C, F);
-		for (int i = 0; i < n; i++) {
-			p1[0](i) = left(i) ? p1[1](i) : P_LEFT;
-			p1[L - 1](i) = right(i) ? p1[L - 2](i) : P_RIGHT;
+		for (int j = 0; j < n; j++) {
+			p1[0](j) = left(j) ? p1[1](j) : P_LEFT;
+			p1[L - 1](j) = right(j) ? p1[L - 2](j) : P_RIGHT;
 		}
-
-		grad(n, p, p1, v_med);
-		// prepare to calculate next step by corner
-		double c_time = (double)CURANT * h / maximum(v_med);
-		uint steps = (double)t / c_time + 1;
-
-		for (int i = 0; i < n; i++)
-			c1[0](i) = c1[1](i);	//left(i) ? 0 : 1;
-
-		for (int j = 0; j < steps; j++) {
-			turn.calculate(v_med, p1, c, c1, c_time);
-		}
-
-		for (int i = 0; i < n; i++)
-			c1[L](i) = c1[L - 1](i);
-
-		if (i % PRNT == 0) {
-			N[0] = L;
-
-			sprintf(buf, "res/pres_%06d.vtk", i);
-			write_to_vtk2d(p, buf, "pressure", N, hh);
-
-			sprintf(buf, "res/data_%06d.vtk", i);
-			write_to_vtk1(p, buf, n, L);
-
-			N[0] = L + 1;
-
-			sprintf(buf, "res/velo_%06d.vtk", i);
-			write_to_vtk2d(v_med, buf, "velocity", N, hh);
-
-			sprintf(buf, "res/conc_%06d.vtk", i);
-			write_to_vtk2d(c, buf, "concentration", N, hh);
-
-			for (int k = 0; k < L + 1; k++) {
-				c_slice[k] = c[k].mult(v_med[k]) * (1.0 / v_med[k].sum());
-			}
-			sprintf(buf, "res/scon_%06d.vtk", i);
-			write_to_vtk1(c_slice, buf, n, L + 1);
-		}
-
-		c = c1;
 		p = p1;
 	}
+
+	N[0] = L;
+	sprintf(buf, "res/pressure.vtk");
+	write_to_vtk1(p, buf, n, L);
+
+	for (uint i = 1; i < L; i += 2)
+		concentration(n, p, i);
+
 }
 
 int main(int argc, char **argv)
@@ -233,7 +226,7 @@ int main(int argc, char **argv)
 	std::cout << "The length = " << L << ", the time = " << TIME << std::endl;
 	std::cout << "Space step = " << h << ", time step = " << t << std::endl;
 
-	tracer_problem(n, u, u1);
+	pressure(n, u, u1);
 
 	std::cout << "DONE" << std::endl;
 	return 0;
