@@ -16,8 +16,10 @@
 #include "vtk.h"
 #include "matrixes.h"
 
-#define PRNT 10
-#define TIME 10000
+#define TR_START 10
+
+#define PRNT 100
+#define TIME 20000
 #define t 1.0
 #define L 500
 #define h 1.0
@@ -75,7 +77,7 @@ void start_cond_con(std::vector<vector>& C)
 	get_left_edge(left);
 	/* free edge -> close C=0, fixed edge -> pressure C=1 */
 	for (int i = 0; i < n; i++)
-		C.at(0)(i) = left(i) ? 0 : 1;;
+		C.at(TR_START)(i) = 1; //left(i) ? 0 : 1;
 };
 
 void tracer_problem(uint n, std::vector<vector>& p, std::vector<vector>& p1)
@@ -91,7 +93,7 @@ void tracer_problem(uint n, std::vector<vector>& p, std::vector<vector>& p1)
 
 	start_cond(p);
 
-	double hh[2] = {h, 10.0}; /* Шаг сетки */
+	double hh[2] = {h, 40.0}; /* Шаг сетки */
 	int N[2] = {L, n}; /* Число точек расчетной области по осям */
 
 	std::vector<vector> v_med(L + 1);
@@ -178,7 +180,7 @@ void tracer_problem(uint n, std::vector<vector>& p, std::vector<vector>& p1)
 		uint steps = (double)t / c_time + 1;
 
 		for (int i = 0; i < n; i++)
-			c1[0](i) = c1[1](i);	//left(i) ? 0 : 1;
+			c1[0](i) = c1[1](i); //left(i) ? 0 : 1;
 
 		for (int j = 0; j < steps; j++) {
 			turn.calculate(v_med, p1, c, c1, c_time);
@@ -198,17 +200,8 @@ void tracer_problem(uint n, std::vector<vector>& p, std::vector<vector>& p1)
 
 			N[0] = L + 1;
 
-			sprintf(buf, "res/velo_%06d.vtk", i);
-			write_to_vtk2d(v_med, buf, "velocity", N, hh);
-
 			sprintf(buf, "res/conc_%06d.vtk", i);
 			write_to_vtk2d(c, buf, "concentration", N, hh);
-
-			for (int k = 0; k < L + 1; k++) {
-				c_slice[k] = c[k].mult(v_med[k]) * (1.0 / v_med[k].sum());
-			}
-			sprintf(buf, "res/scon_%06d.vtk", i);
-			write_to_vtk1(c_slice, buf, n, L + 1);
 		}
 
 		c = c1;

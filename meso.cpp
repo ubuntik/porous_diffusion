@@ -16,11 +16,8 @@
 #include "vtk.h"
 #include "matrixes.h"
 
-// shift for tracer start conditions
-#define DIF 10
-
-#define PRNT 10
-#define TIME 15000
+#define PRNT 1
+#define TIME 20//15000
 #define STABLE 1000
 #define t 1.0
 #define L 200
@@ -111,7 +108,7 @@ void concentration(uint n, std::vector<vector>& p1, uint dif)
 
 		N[0] = L + 1;
 
-		if (j % 100 == 0) {
+		if (j % PRNT == 0) {
 			sprintf(buf, "res/%03d_%06d.vtk",dif, j);
 			write_to_vtk2d(c, buf, "concentration", N, hh);
 		}
@@ -204,7 +201,7 @@ void pressure(uint n, std::vector<vector>& p, std::vector<vector>& p1)
 	sprintf(buf, "res/pressure.vtk");
 	write_to_vtk1(p, buf, n, L);
 
-	for (uint i = 1; i < L; i += 2)
+	for (uint i = 1; i < 200; i += 2)
 		concentration(n, p, i);
 
 }
