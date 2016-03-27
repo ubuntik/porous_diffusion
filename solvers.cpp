@@ -160,5 +160,156 @@ void corner::calculate(	const std::vector<vector>& v_med,
 	}
 };
 
+secondord::secondord(uint n_size, uint length)
+{
+	n = n_size;
+	l = length;
+	assert(n >= 0);
 
+	matrix K_ini(n);
+	get_K(K_ini);
+
+	K = new matrix(n);
+	*K = K_ini * (1.0 / ETA);
+
+	D = new matrix(n);
+	get_D(*D);
+
+	perm = new vector(n);
+	for (int i = 0; i < n; i++)
+		(*perm)(i) = (*K)(i, i);
+};
+
+secondord::~secondord()
+{
+	delete K;
+	delete D;
+};
+
+void secondord::left_edge(std::vector<vector>& C1)
+{
+	uint n = C1[0].size();
+	vector left(n);
+	get_left_edge(left);
+
+	for (int i = 0; i < n; i++) {
+		C1[1](i) = left(i) ? 0 : 1;
+		C1[0](i) = left(i) ? 0 : 1;
+	}
+};
+
+void secondord::right_edge(std::vector<vector>& C1)
+{
+	/* for all classes of pores: dC/dx = 0 */
+	uint n = C1[0].size();
+	for (int i = 0; i < n; i++) {
+		C1[l - 1](i) = C1[l - 2](i);
+		C1[l](i) = C1[l - 1](i);
+	}
+};
+
+void secondord::calculate(const std::vector<vector>& v_med,
+			const std::vector<vector>& p,
+			const std::vector<vector>& C,
+			std::vector<vector>& C1, double dt)
+{
+	vector v(n);
+	vector c1(n);
+	vector c2(n);
+
+	vector c_i(n);
+	vector c_im1(n);
+	vector c_ip1(n);
+	vector c_im2(n);
+	vector c_ip2(n);
+
+	vector Dm(n);
+	vector Dp(n);
+	vector Dmm(n);
+	vector Dpp(n);
+
+	vector Qp(n);
+	vector Qm(n);
+
+	vector q(n);
+
+	vector crt(n);
+
+	for (int x = 3; x < l - 3; x++) {
+		/* split on physical processes */
+		/* 1. calculate dC/dt + U dC/dx = 0 */
+		v = (*perm).mult(v_med[x]);
+		// v = (*K) * v_med[x];
+
+		crt = C[x];
+		c1 = C[x];
+		c1 = c1 - (crt - C[x - 1]).mult(v) * (dt / h);
+		crt = C[x + 1];
+		c2 = C[x + 1];
+		c2 = c2 - (crt - C[x]).mult(v) * (dt / h);
+		c_i = (c1 + C[x] - (c2 - c1).mult(v) * (dt / h)) * 0.5;
+
+		crt = C[x - 1];
+		c1 = C[x - 1];
+		c1 = c1 - (crt - C[x - 2]).mult(v) * (dt / h);
+		crt = C[x];
+		c2 = C[x];
+		c2 = c2 - (crt - C[x - 1]).mult(v) * (dt / h);
+		c_im1 = (c1 + C[x - 1] - (c2 - c1).mult(v) * (dt / h)) * 0.5;
+
+		crt = C[x + 1];
+		c1 = C[x + 1];
+		c1 = c1 - (crt - C[x]).mult(v) * (dt / h);
+		crt = C[x + 2];
+		c2 = C[x + 2];
+		c2 = c2 - (crt - C[x + 1]).mult(v) * (dt / h);
+		c_ip1 = (c1 + C[x + 1] - (c2 - c1).mult(v) * (dt / h)) * 0.5;
+
+		crt = C[x - 2];
+		c1 = C[x - 2];
+		c1 = c1 - (crt - C[x - 3]).mult(v) * (dt / h);
+		crt = C[x - 1];
+		c2 = C[x - 1];
+		c2 = c2 - (crt - C[x - 2]).mult(v) * (dt / h);
+		c_im2 = (c1 + C[x - 2] - (c2 - c1).mult(v) * (dt / h)) * 0.5;
+
+		crt = C[x + 2];
+		c1 = C[x + 2];
+		c1 = c1 - (crt - C[x + 1]).mult(v) * (dt / h);
+		crt = C[x + 3];
+		c2 = C[x + 3];
+		c2 = c2 - (crt - C[x + 2]).mult(v) * (dt / h);
+		c_ip2 = (c1 + C[x + 2] - (c2 - c1).mult(v) * (dt / h)) * 0.5;
+
+		Dm = c_i - c_im1;
+		Dp = c_ip1 - c_i;
+		Dmm = c_im1 - c_im2;
+		Dpp = c_ip2 - c_ip1;
+
+		for (int i = 0; i < n; i++) {
+			Qp(i) = ((Dm(i) * Dp(i) <= 0) || (Dp(i) * Dpp(i) <= 0)) ? Dp(i) : 0;
+			Qm(i) = ((Dm(i) * Dp(i) <= 0) || (Dm(i) * Dmm(i) <= 0)) ? Dm(i) : 0;
+		}
+
+		C1[x] = c_i + (Qp - Qm) * 0.1;
+
+		/* 2. calculate additional mass transfer dC/dt + U dC/dx = q */
+		/* q = -C(i|Pi >= Pj, i != j / j) D(i,j) (Pi - Pj) */
+
+		for (int i = 0; i < n; i++) {
+			q(i) = 0;
+			for (int j = 0; j < n; j++) {
+				if (i == j)
+					continue;
+				q(i) += ((p[x](i) >= p[x](j)) ? C1[x](i) : C1[x](j)) *
+					((*D)(i,j)) * (p[x](i) - p[x](j));
+			}
+
+			C1[x](i) += q(i) * dt;
+			if (C1[x](i) < 0)
+				C1[x](i) = 0;
+		}
+
+	}
+};
 

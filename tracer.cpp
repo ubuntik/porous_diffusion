@@ -160,7 +160,7 @@ void tracer_problem(uint n, std::vector<vector>& p, std::vector<vector>& p1)
 	B[l - 1] = B[l - 1] - Br;
 
 	progonka gone(n, l);
-	corner turn(n, L);
+	secondord turn(n, L);
 
 	for (int i = 0; i < time; i++) {
 		for (int i = 0; i < l; i++)
