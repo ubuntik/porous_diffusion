@@ -6,70 +6,67 @@
  */
 
 #include <iostream>
-#include <vector>
-
 #include <math.h>
 #include <assert.h>
 
-#include "../lalgebra.h"
 #include "../solvers.h"
-#include "../vtk.h"
 
 // edge conditions
 #define P_LEFT 1
 #define P_RIGHT 0
 
 #define L 8
+#define n 2
 
-void start_cond(std::vector<vector>& u)
+void start_cond(vector<vec>& u)
 {
-	uint n = u[0].size();
 	for (int i = 0; i < n; i++) {
 		u.at(0)(i) = P_LEFT;
 		u.at(L - 1)(i) = P_RIGHT;
 	}
 };
 
-void check_progonka(uint n, std::vector<vector>& u, std::vector<vector>& u1)
+void check_progonka(vector<vec>& u, vector<vec>& u1)
 {
 	start_cond(u);
 
-	std::cout << "was" << std::endl;
+	cout << "was" << endl;
 	for (int i = 0; i < L; i++)
-		u[i].print();
+		cout << u[i];
 
 	// A(n) u(n - 1) - B(n) u(n) + C(n) u(n + 1) = F(n)
-	std::vector<matrix> A(L);
-	std::vector<matrix> B(L);
-	std::vector<matrix> C(L);
-	std::vector<vector> F(L);
+	vector<mat> A(L, mat(n, n, fill::eye));
+	vector<mat> B(L, mat(n, n, fill::zeros));
+	vector<mat> C(L, mat(n, n, fill::zeros));
+	vector<vec> F(L, vec(n, fill::zeros));
+
 
 	for (int i = 0; i < L; i++) {
-		A[i].init(n, 1);
-		B[i].init(n, 3);
-		C[i].init(n, 2);
+		mat e(n, n, fill::eye);
+		B[i] = 3 * e;
+		C[i] = 2 * e;
 	}
 
-	F[0].init(n, 1);
-	F[1].init(n, 1);
-	F[2].init(n, 1);
-	F[3].init(n, -3);
-	F[4].init(n, -1);
-	F[5].init(n, -1);
-	F[6].init(n, -1);
-	F[7].init(n, 1);
+	F[0].fill(1);
+	F[1].fill(1);
+	F[2].fill(1);
+	F[3].fill(-3);
+	F[4].fill(-1);
+	F[5].fill(-1);
+	F[6].fill(-1);
+	F[7].fill(1);
 
-	progonka method(n, L, A, B, C, F);
+	progonka method(n, L);
 
-	method.calculate(u1);
+	method.calculate(u1, A, B, C, F);
 
-	std::cout << "now" << std::endl;
+	cout << "now" << endl;
 	for (int i = 0; i < L; i++)
-		u1[i].print();
+		cout << u1[i];
 
-	std::cout << "should be:" << std::endl;
-	std::cout << "( 1 1 )\n( 2 2 )\n( 3 3 )\n( 4 4 )" << std::endl;
-	std::cout << "( 3 3 )\n( 2 2 )\n( 1 1 )\n( 0 0 )" << std::endl;
+	cout << "should be:" << endl;
+	cout << "( 1 1 )\n( 2 2 )\n( 3 3 )\n( 4 4 )" << endl;
+	cout << "( 3 3 )\n( 2 2 )\n( 1 1 )\n( 0 0 )" << endl;
 
 	A.clear();
 	B.clear();
@@ -80,20 +77,13 @@ void check_progonka(uint n, std::vector<vector>& u, std::vector<vector>& u1)
 int main(int argc, char **argv)
 {
 	// the problem size
-	uint n = 2;
-	std::vector<vector> u(L);
-	std::vector<vector> u1(L);
-
-	/* due to the specific realization of std containers */
-	for (int i = 0; i < L; i++) {
-		u[i].init(n);
-		u1[i].init(n);
-	}
+	vector<vec> u (L, vec(n, fill::zeros));
+	vector<vec> u1 (L, vec(n, fill::zeros));
 
 	std::cout << "The dimension of prodlem: " << n << std::endl;
 	std::cout << "The length = " << L << std::endl;
 
-	check_progonka(n, u, u1);
+	check_progonka(u, u1);
 
 	std::cout << "DONE" << std::endl;
 

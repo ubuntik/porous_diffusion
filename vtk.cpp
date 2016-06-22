@@ -10,6 +10,8 @@
 
 #include "vtk.h"
 
+using namespace arma;
+
 void write_to_vtk1(std::vector<vector>& u, const char *path, uint n, uint l)
 {
 	FILE *f = fopen(path, "w");

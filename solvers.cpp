@@ -7,12 +7,10 @@
 
 #include <assert.h>
 #include <iostream>
-#include <vector>
 #include <math.h>
 
 #include "solvers.h"
-#include "lalgebra.h"
-#include "matrixes.h"
+//#include "matrixes.h"
 
 #define ETA 1
 #define h 1.0
@@ -24,57 +22,52 @@ progonka::progonka(uint n_size, uint length)
 	assert(n >= 0);
 };
 
-void progonka::calculate(std::vector<vector>& u1,
-		std::vector<matrix> &A,
-		std::vector<matrix> &B,
-		std::vector<matrix> &C,
-		std::vector<vector> &F)
+void progonka::calculate(vector<vec>& u1,
+		vector<mat> &A,
+		vector<mat> &B,
+		vector<mat> &C,
+		vector<vec> &F)
 {
 	/* coefficients */
-	std::vector<matrix> Ps(l);
-	std::vector<vector> Qs(l);
-	matrix G(n);
-
-	/* due to the specific realization of std containers */
-	for (int i = 0; i < l; i++) {
-		Ps[i].init(n);
-		Qs[i].init(n);
-	}
+	vector<mat> Ps (l, mat(n, n, fill::zeros));
+	vector<vec> Qs (l, vec(n, fill::zeros));
+	mat G(n, n, fill::zeros);
 
 	// Ps[0] and Qs[0] are not used
-	Ps[1] = B[0].inverse() * C[0];
-	Qs[1] = B[0].inverse() * F[0] * (-1);
+	mat inver = inv(B[0]);
+	Ps[1] = inver * C[0];
+	Qs[1] = -inver * F[0];
 
 	/* There */
 	for (int i = 2; i < l; i++) {
-		G = (B[i - 1] - (A[i - 1] * Ps[i - 1])).inverse();
+		G = (B[i - 1] - (A[i - 1] * Ps[i - 1])).i();
 
 		Ps[i] = G * C[i - 1];
-		Qs[i] = G * ((A[i - 1] * Qs[i - 1]) - F[i - 1]);
+		Qs[i] = G * (A[i - 1] * Qs[i - 1] - F[i - 1]);
 	}
 
-	G = (B[l - 1] - (A[l - 1] * Ps[l - 1])).inverse();
+	G = (B[l - 1] - (A[l - 1] * Ps[l - 1])).i();
 
 //	for unit_tests check.cpp without edge conditions
-//	u1[l - 1] = G * ((A[l - 1] * Qs[l - 1]) - F[l - 1]);
+	u1[l - 1] = G * ((A[l - 1] * Qs[l - 1]) - F[l - 1]);
 
-	u1[l] = G * ((A[l - 1] * Qs[l - 1]) - F[l - 1]);
+//	u1[l] = G * ((A[l - 1] * Qs[l - 1]) - F[l - 1]);
 
 	/* and Back Again */
 
 //	for unit_tests check.cpp without edge conditions
-/*
-	for (int i = l - 2; i >= 0; i--) {
-		u1[i] = (Ps[i + 1] * u1[i + 1]) + Qs[i + 1];
-*/
-	for (int i = l - 1; i > 0; i--) {
-		u1[i] = (Ps[i] * u1[i + 1]) + Qs[i];
-	}
 
+	for (int i = l - 2; i >= 0; i--)
+		u1[i] = (Ps[i + 1] * u1[i + 1]) + Qs[i + 1];
+/*
+	for (int i = l - 1; i > 0; i--)
+		u1[i] = (Ps[i] * u1[i + 1]) + Qs[i];
+*/
 	Ps.clear();
 	Qs.clear();
 };
 
+#if 0
 corner::corner(uint n_size, uint length)
 {
 	n = n_size;
@@ -101,7 +94,7 @@ corner::~corner()
 	delete D;
 };
 
-void corner::left_edge(std::vector<vector>& C1)
+void corner::left_edge(vector<vec>& C1)
 {
 	uint n = C1[0].size();
 	vector left(n);
@@ -111,7 +104,7 @@ void corner::left_edge(std::vector<vector>& C1)
 		C1[0](i) = left(i) ? 0 : 1;
 };
 
-void corner::right_edge(std::vector<vector>& C1)
+void corner::right_edge(vector<vec>& C1)
 {
 	/* for all classes of pores: dC/dx = 0 */
 	uint n = C1[0].size();
@@ -119,10 +112,10 @@ void corner::right_edge(std::vector<vector>& C1)
 		C1[l](i) = C1[l - 1](i);
 };
 
-void corner::calculate(	const std::vector<vector>& v_med,
-			const std::vector<vector>& p,
-			const std::vector<vector>& C,
-			std::vector<vector>& C1, double dt)
+void corner::calculate(	const vector<vec>& v_med,
+			const vector<vec>& p,
+			const vector<vec>& C,
+			vector<vec>& C1, double dt)
 {
 	vector v(n);
 	vector crt(n);
@@ -186,7 +179,7 @@ secondord::~secondord()
 	delete D;
 };
 
-void secondord::left_edge(std::vector<vector>& C1)
+void secondord::left_edge(vector<vec>& C1)
 {
 	uint n = C1[0].size();
 	vector left(n);
@@ -198,7 +191,7 @@ void secondord::left_edge(std::vector<vector>& C1)
 	}
 };
 
-void secondord::right_edge(std::vector<vector>& C1)
+void secondord::right_edge(vector<vec>& C1)
 {
 	/* for all classes of pores: dC/dx = 0 */
 	uint n = C1[0].size();
@@ -208,10 +201,10 @@ void secondord::right_edge(std::vector<vector>& C1)
 	}
 };
 
-void secondord::calculate(const std::vector<vector>& v_med,
-			const std::vector<vector>& p,
-			const std::vector<vector>& C,
-			std::vector<vector>& C1, double dt)
+void secondord::calculate(const vector<vec>& v_med,
+			const vector<vec>& p,
+			const vector<vec>& C,
+			vector<vec>& C1, double dt)
 {
 	vector v(n);
 	vector c1(n);
@@ -312,4 +305,5 @@ void secondord::calculate(const std::vector<vector>& v_med,
 
 	}
 };
+#endif
 

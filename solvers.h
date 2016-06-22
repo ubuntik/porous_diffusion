@@ -10,33 +10,41 @@
 #ifndef _SLB_SOLVERS_LIB
 #define _SLB_SOLVERS_LIB
 
-#include "lalgebra.h"
+#include <armadillo>
+#include <vector>
+
+using namespace std;
+using namespace arma;
+
+typedef unsigned int uint;
+typedef double ptype;
 
 class progonka
 {
 public:
 	progonka(uint n_size, uint length);
 	~progonka() {};
-	void calculate(std::vector<vector>& u1,
-		std::vector<matrix> &a, std::vector<matrix> &b,
-		std::vector<matrix> &c, std::vector<vector> &f);
+	void calculate(vector<vec>& u1,
+		vector<mat> &a, vector<mat> &b,
+		vector<mat> &c, vector<vec> &f);
 private:
 	uint n;
 	uint l;
 };
 
+#if 0
 class corner
 {
 public:
 	corner(uint n_size, uint length);
 	~corner();
-	void calculate( const std::vector<vector>& v_med,
-			const std::vector<vector>& p,
-			const std::vector<vector>& C,
-			std::vector<vector>& C1, double dt);
+	void calculate( const vector<vec>& v_med,
+			const vector<vec>& p,
+			const vector<vec>& C,
+			vector<vec>& C1, double dt);
 private:
-	void left_edge(std::vector<vector>& C1);
-	void right_edge(std::vector<vector>& C1);
+	void left_edge(vector<vec>& C1);
+	void right_edge(vector<vec>& C1);
 	uint n;
 	uint l;
 	matrix *K;
@@ -49,18 +57,18 @@ class secondord
 public:
 	secondord(uint n_size, uint length);
 	~secondord();
-	void calculate( const std::vector<vector>& v_med,
-			const std::vector<vector>& p,
-			const std::vector<vector>& C,
-			std::vector<vector>& C1, double dt);
+	void calculate( const vector<vec>& v_med,
+			const vector<vec>& p,
+			const vector<vec>& C,
+			vector<vec>& C1, double dt);
 private:
-	void left_edge(std::vector<vector>& C1);
-	void right_edge(std::vector<vector>& C1);
+	void left_edge(vector<vec>& C1);
+	void right_edge(vector<vec>& C1);
 	uint n;
 	uint l;
 	matrix *K;
 	matrix *D;
 	vector *perm;
 };
-
+#endif
 #endif // _SLB_SOLVERS_LIB

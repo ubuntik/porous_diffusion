@@ -9,7 +9,10 @@
 #define _SLB_VTKPRINT_LIB
 
 #include <vector>
-#include "lalgebra.h"
+#include <armadillo>
+
+typedef unsigned int uint;
+typedef double ptype;
 
 #define START 1
 

@@ -1,13 +1,14 @@
 all: progonka lapack lalgebra
+flags = -larmadillo -llapack -lblas -g
 
 progonka:
-	g++ -o progonka ../solvers.cpp ../lalgebra.cpp check.cpp -llapack -g
+	g++ -o progonka ../solvers.cpp ../lalgebra.cpp check.cpp ${flags}
 
 lapack:
-	g++ -o lapack ../solvers.cpp ../lalgebra.cpp test_lapack.cpp -llapack -g
+	g++ -o lapack ../solvers.cpp ../lalgebra.cpp test_lapack.cpp ${flags}
 
 lalgebra:
-	g++ -o lalgebra ../lalgebra.cpp lalgebra_tests.cpp -llapack -g
+	g++ -o lalgebra ../lalgebra.cpp lalgebra_tests.cpp ${flags}
 
 clean:
 	rm -rf lalgebra lapack progonka *.dSYM
