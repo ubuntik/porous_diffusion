@@ -49,20 +49,20 @@ void progonka::calculate(vector<vec>& u1,
 	G = (B[l - 1] - (A[l - 1] * Ps[l - 1])).i();
 
 //	for unit_tests check.cpp without edge conditions
-	u1[l - 1] = G * ((A[l - 1] * Qs[l - 1]) - F[l - 1]);
+//	u1[l - 1] = G * ((A[l - 1] * Qs[l - 1]) - F[l - 1]);
 
-//	u1[l] = G * ((A[l - 1] * Qs[l - 1]) - F[l - 1]);
+	u1[l] = G * ((A[l - 1] * Qs[l - 1]) - F[l - 1]);
 
 	/* and Back Again */
 
 //	for unit_tests check.cpp without edge conditions
-
+/*
 	for (int i = l - 2; i >= 0; i--)
 		u1[i] = (Ps[i + 1] * u1[i + 1]) + Qs[i + 1];
-/*
+*/
 	for (int i = l - 1; i > 0; i--)
 		u1[i] = (Ps[i] * u1[i + 1]) + Qs[i];
-*/
+
 	Ps.clear();
 	Qs.clear();
 };

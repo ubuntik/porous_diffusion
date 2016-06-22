@@ -6,25 +6,23 @@
  */
 
 #include <iostream>
-#include <vector>
 
 #include <math.h>
 #include <assert.h>
 
-#include "lalgebra.h"
 #include "solvers.h"
 #include "vtk.h"
 #include "matrixes.h"
 
-#define PRNT 100
-#define TIME 10000
+#define PRNT 1
+#define TIME 100
 #define t 1
 #define L 100
 #define h 1.0
 #define P_LEFT 1.0
 #define P_RIGHT 0.0
 
-void start_cond(std::vector<vector>& u)
+void start_cond(vector<vec>& u)
 {
 	uint n = u[0].size();
 	for (int i = 0; i < n; i++) {
@@ -33,80 +31,61 @@ void start_cond(std::vector<vector>& u)
 	}
 };
 
-void direct_problem(uint n, std::vector<vector>& u, std::vector<vector>& u1)
+void direct_problem(uint n, vector<vec>& u, vector<vec>& u1)
 {
 	char buf[256];
 	double time = (double)TIME / t;
 	uint l = L - 2; // exept edge points
-	matrix Al(n, 1.0/t);
-	matrix K(n);
+	mat e(n, n, fill::eye);
+	mat Al = e * (1.0/t);
+	mat K(n, n, fill::zeros);
 	get_K(K);
-	matrix D(n);
+	mat D(n, n, fill::zeros);
 	get_D(D);
 
 	start_cond(u);
 	sprintf(buf, "res/data_000000.vtk");
 	write_to_vtk1(u, buf, n, L);
 
-	vector left(n);
-	vector right(n);
+	vec left(n, fill::zeros);
+	get_left_edge(left);
+	vec right(n, fill::zeros);
+	get_right_edge(right);
 
-//	left(0) = 1;
-	left(1) = 1;
-//	left(2) = 1;
-	left(3) = 1;
-//	left(4) = 1;
-	left(5) = 1;
-//	left(6) = 1;
-	left(7) = 1;
-
-	right(0) = 1;
-	right(1) = 1;
-	right(2) = 1;
-	right(3) = 1;
-	right(4) = 1;
-	right(5) = 1;
-	right(6) = 1;
-	right(7) = 1;
-
-	std::vector<matrix> A(l);
-        std::vector<matrix> B(l);
-	std::vector<matrix> C(l);
-	std::vector<vector> F(l);
+	vector<mat> A(l, mat(n, n, fill::zeros));
+        vector<mat> B(l, mat(n, n, fill::zeros));
+	vector<mat> C(l, mat(n, n, fill::zeros));
+	vector<vec> F(l, vec(n, fill::zeros));
 
 	for (int i = 0; i < l; i++) {
-		A[i].init(n);
 		A[i] = K * (1.0 / h / h);
-		B[i].init(n);
 		B[i] = Al + K * (2.0 / h / h) + D;
-		C[i].init(n);
 		C[i] = K * (1.0 / h / h);
-		F[i].init(n);
 	}
 
-	matrix E(n);
-	vector Fl(n);
+	mat E(n, n, fill::zeros);
+	vec Fl(n, fill::zeros);
 	for (int i = 0; i < n; i++) {
 		E(i, i) = left(i);
 		if (left(i) == 1)
 			continue;
-		vector l(n);
+		vec l(n, fill::zeros);
 		l(i) = P_LEFT;
 		Fl = Fl + A[0] * l;
 	}
-	matrix Bl(n);
+	mat Bl(n, n, fill::zeros);
 	Bl = A[0] * E;
 
-	vector Fr(n);
+	vec Fr(n, fill::zeros);
 	for (int i = 0; i < n; i++) {
 		E(i, i) = right(i);
 		if (right(i) == 1)
 			continue;
-		vector r(n);
+		vec r(n, fill::zeros);
 		r(i) = P_RIGHT;
 		Fr = Fr + C[l - 1] * r;
 	}
-	matrix Br(n);
+	mat Br(n, n, fill::zeros);
 	Br = C[l - 1] * E;
 
 	B[0] = B[0] - Bl;
@@ -139,22 +118,16 @@ int main(int argc, char **argv)
 {
 	// the problem size
 	uint n = 8;
-	std::vector<vector> u(L);
-	std::vector<vector> u1(L);
+	vector<vec> u(L, vec(n, fill::zeros));
+	vector<vec> u1(L, vec(n, fill::zeros));
 
-	/* due to the specific realization of std containers */
-	for (int i = 0; i < L; i++) {
-		u[i].init(n);
-		u1[i].init(n);
-	}
-
-	std::cout << "The dimension of prodlem: " << n << std::endl;
-	std::cout << "The length = " << L << ", the time = " << TIME << std::endl;
-	std::cout << "Space step = " << h << ", time step = " << t << std::endl;
+	cout << "The dimension of prodlem: " << n << endl;
+	cout << "The length = " << L << ", the time = " << TIME << endl;
+	cout << "Space step = " << h << ", time step = " << t << endl;
 
 	direct_problem(n, u, u1);
 
-	std::cout << "DONE" << std::endl;
+	cout << "DONE" << endl;
 	return 0;
 }
 

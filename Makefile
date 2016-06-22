@@ -1,6 +1,6 @@
 CC = g++
 HOME = /Users/admin/Documents/Schlum/
-CFLAGS = -g -llapack
+CFLAGS = -g -larmadillo -llapack -lblas
 
 all: simple_ODE compare direct tracer
 

@@ -7,7 +7,7 @@
 #ifndef _SLB_MATRIXES
 #define _SLB_MATRIXES
 
-static void get_K(matrix &K)
+static void get_K(mat &K)
 {
 	K(0, 0) = 700.72; K(1, 0) = -90.791; K(2, 0) = -51.8508; K(3, 0) = -20.9356;
 	K(4, 0) = -16.6301; K(5, 0) = -36.7135; K(6, 0) = -12.6038; K(7, 0) = -11.0965;
@@ -34,7 +34,7 @@ static void get_K(matrix &K)
 	K(4, 7) = 13.1; K(5, 7) = 18.6; K(6, 7) = 23.8; K(7, 7) = 68.8;
 }
 
-static void get_D(matrix &D)
+static void get_D(mat &D)
 {
 	D(0, 0) = 0.00579; D(1, 0) = -0.00135; D(2, 0) = -0.00060; D(3, 0) = -0.00051;
 	D(4, 0) = -0.00054; D(5, 0) = -0.00072; D(6, 0) = -0.00097; D(7, 0) = -0.00111;
@@ -61,7 +61,7 @@ static void get_D(matrix &D)
 	D(4, 7) = -0.00041; D(5, 7) = -0.00056; D(6, 7) = -0.00071; D(7, 7) = 0.00445;
 }
 
-static void get_left_edge(vector &left)
+static void get_left_edge(vec &left)
 {
 
 //	left(0) = 1;
@@ -75,7 +75,7 @@ static void get_left_edge(vector &left)
 
 }
 
-static void get_right_edge(vector &right)
+static void get_right_edge(vec &right)
 {
 
 //	right(0) = 1;
