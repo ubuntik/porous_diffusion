@@ -2,7 +2,7 @@ all: progonka lapack lalgebra
 flags = -larmadillo -llapack -lblas -g
 
 progonka:
-	g++ -o progonka ../solvers.cpp ../lalgebra.cpp check.cpp ${flags}
+	g++ -o progonka ../solvers.cpp ../lalgebra.cpp progonka.cpp ${flags}
 
 lapack:
 	g++ -o lapack ../solvers.cpp ../lalgebra.cpp test_lapack.cpp ${flags}
