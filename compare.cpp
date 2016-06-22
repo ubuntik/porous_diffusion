@@ -6,12 +6,10 @@
  */
 
 #include <iostream>
-#include <vector>
 
 #include <math.h>
 #include <assert.h>
 
-#include "lalgebra.h"
 #include "solvers.h"
 #include "vtk.h"
 
@@ -23,11 +21,11 @@
 #define P_LEFT 0.0
 #define P_RIGHT 1.0
 
-std::vector<ptype> acc(L);
+vector<double> acc(L);
 
-ptype erf(ptype x)
+double erf(double x)
 {
-	ptype ret = 0;
+	double ret = 0;
 	double a1 = 0.278393;
 	double a2 = 0.230389;
 	double a3 = 0.000972;
@@ -40,7 +38,7 @@ ptype erf(ptype x)
 	return ret;
 }
 
-void start_cond_1(std::vector<vector>& u)
+void start_cond_1(vector<vec>& u)
 {
 	uint n = u[0].size();
 	for (int j = 0; j < n; j++) {
@@ -51,33 +49,31 @@ void start_cond_1(std::vector<vector>& u)
 	}
 };
 
-void compare_accurate(uint n, std::vector<vector>& u, std::vector<vector>& u1)
+void compare_accurate(uint n, vector<vec>& u, vector<vec>& u1)
 {
 	char buf[256];
 	double time = (double)TIME / t;
 	uint l = L - 2; // exept edge points
-	matrix Al(n, 1.0/t);
-	matrix K(n, 1);
-	matrix D(n);
+	mat e(n, n, fill::eye);
+	mat Al = e * (1.0/t);
+	mat K(n, n, fill::eye);
+	mat D(n, n, fill::zeros);
 
 	start_cond_1(u);
 
-	std::vector<matrix> A(l);
-	std::vector<matrix> B(l);
-	std::vector<matrix> C(l);
-	std::vector<vector> F(l);
+	vector<mat> A(l, mat(n, n, fill::zeros));
+	vector<mat> B(l, mat(n, n, fill::zeros));
+	vector<mat> C(l, mat(n, n, fill::zeros));
+	vector<vec> F(l, vec(n, fill::zeros));
 
 	for (int i = 0; i < l; i++) {
-		A[i].init(n);
 		A[i] = K * (1.0 / h / h);
-		B[i].init(n);
 		B[i] = Al + K * (2.0 / h / h) + D;
-		C[i].init(n);
 		C[i] = K * (1.0 / h / h);
-		F[i].init(n);
 	}
-	vector left(n, P_LEFT);
-	vector right(n, P_RIGHT);
+	vec ve(n, fill::ones);
+	vec left = ve * P_LEFT;
+	vec right = ve * P_RIGHT;
 
 	progonka method(n, l);
 
@@ -104,22 +100,16 @@ int main(int argc, char **argv)
 {
 	// the problem size
 	uint n = 1;
-	std::vector<vector> u(L);
-	std::vector<vector> u1(L);
+	vector<vec> u(L, vec(n, fill::zeros));
+	vector<vec> u1(L, vec(n, fill::zeros));
 
-	/* due to the specific realization of std containers */
-	for (int i = 0; i < L; i++) {
-		u[i].init(n);
-		u1[i].init(n);
-	}
-
-	std::cout << "The dimension of prodlem: " << n << std::endl;
-	std::cout << "The length = " << L << ", the time = " << TIME << std::endl;
-	std::cout << "Space step = " << h << ", time step = " << t << std::endl;
+	cout << "The dimension of prodlem: " << n << endl;
+	cout << "The length = " << L << ", the time = " << TIME << endl;
+	cout << "Space step = " << h << ", time step = " << t << endl;
 
 	compare_accurate(n, u, u1);
 
-	std::cout << "DONE" << std::endl;
+	cout << "DONE" << endl;
 	return 0;
 }
 
