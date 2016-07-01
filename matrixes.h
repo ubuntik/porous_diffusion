@@ -66,10 +66,10 @@ static void get_left_edge(vec &left)
 
 //	left(0) = 1;
 //	left(1) = 1;
-//	left(2) = 1;
-//	left(3) = 1;
+	left(2) = 1;
+	left(3) = 1;
 //	left(4) = 1;
-//	left(5) = 1;
+	left(5) = 1;
 //	left(6) = 1;
 //	left(7) = 1;
 
@@ -82,10 +82,10 @@ static void get_right_edge(vec &right)
 //	right(1) = 1;
 //	right(2) = 1;
 //	right(3) = 1;
-//	right(4) = 1;
+	right(4) = 1;
 //	right(5) = 1;
-//	right(6) = 1;
-//	right(7) = 1;
+	right(6) = 1;
+	right(7) = 1;
 
 }
 

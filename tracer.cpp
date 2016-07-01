@@ -11,7 +11,6 @@
 #include <math.h>
 #include <assert.h>
 
-#include "lalgebra.h"
 #include "solvers.h"
 #include "vtk.h"
 #include "matrixes.h"
@@ -33,7 +32,7 @@
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 
-void start_cond(std::vector<vector>& u)
+void start_cond(vector<vec>& u)
 {
 	uint n = u[0].size();
 	for (int i = 0; i < n; i++) {
@@ -42,21 +41,21 @@ void start_cond(std::vector<vector>& u)
 	}
 };
 
-ptype maximum(std::vector<vector>& v_med)
+double maximum(vector<vec>& v_med)
 {
-	ptype ret = 0;
+	double ret = 0;
 	for (int i = 0; i <= L; i++)
 		for (int j = 0; j < v_med[i].size(); j++)
 			ret = MAX(fabs(v_med[i](j)), ret);
 	return ret;
 }
 
-void grad(uint n, std::vector<vector>& p,
-		  std::vector<vector>& p1,
-		  std::vector<vector>& v_med)
+void grad(uint n, vector<vec>& p,
+		  vector<vec>& p1,
+		  vector<vec>& v_med)
 {
-	vector v(n);
-	vector v1(n);
+	vec v(n, fill::zeros);
+	vec v1(n, fill::zeros);
 
 	for (int i = 1; i < L; i++) {
 		v = p[i - 1] - p[i];
@@ -70,25 +69,27 @@ void grad(uint n, std::vector<vector>& p,
 }
 
 
-void start_cond_con(std::vector<vector>& C)
+void start_cond_con(vector<vec>& C)
 {
 	uint n = C[0].size();
-	vector left(n);
+	vec left(n, fill::zeros);
 	get_left_edge(left);
 	/* free edge -> close C=0, fixed edge -> pressure C=1 */
 	for (int i = 0; i < n; i++)
 		C.at(TR_START)(i) = 1; //left(i) ? 0 : 1;
 };
 
-void tracer_problem(uint n, std::vector<vector>& p, std::vector<vector>& p1)
+void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 {
 	char buf[256];
 	double time = (double)TIME / t;
 	uint l = L - 2; // exept edge points
-	matrix Al(n, 1.0/t);
-	matrix K(n);
+	mat ee(n, n, fill::eye);
+	mat Al(n, n, fill::zeros);
+	Al = ee * (1.0 / t);
+	mat K(n, n, fill::zeros);
 	get_K(K);
-	matrix D(n);
+	mat D(n, n, fill::zeros);
 	get_D(D);
 
 	start_cond(p);
@@ -96,64 +97,52 @@ void tracer_problem(uint n, std::vector<vector>& p, std::vector<vector>& p1)
 	double hh[2] = {h, 40.0}; /* Шаг сетки */
 	int N[2] = {L, n}; /* Число точек расчетной области по осям */
 
-	std::vector<vector> v_med(L + 1);
-	std::vector<vector> c(L + 1);
-	std::vector<vector> c1(L + 1);
-	std::vector<vector> c_slice(L + 1);
-
-	/* due to the specific realization of std containers */
-	for (int i = 0; i <= L; i++) {
-		v_med[i].init(n);
-		c[i].init(n);
-		c1[i].init(n);
-		c_slice[i].init(n);
-	}
+	vector<vec> v_med(L + 1, vec(n, fill::zeros));
+	vector<vec> c(L + 1, vec(n, fill::zeros));
+	vector<vec> c1(L + 1, vec(n, fill::zeros));
+	vector<vec> c_slice(L + 1, vec(n, fill::zeros));
 
 	start_cond_con(c);
 
-	vector left(n);
+	vec left(n, fill::zeros);
 	get_left_edge(left);
-	vector right(n);
+	vec right(n, fill::zeros);
 	get_right_edge(right);
 
-	std::vector<matrix> A(l);
-	std::vector<matrix> B(l);
-	std::vector<matrix> C(l);
-	std::vector<vector> F(l);
+	vector<mat> A(l, mat(n, n, fill::zeros));
+	vector<mat> B(l, mat(n, n, fill::zeros));
+	vector<mat> C(l, mat(n, n, fill::zeros));
+	vector<vec> F(l, vec(n, fill::zeros));
 
 	for (int i = 0; i < l; i++) {
-		A[i].init(n);
 		A[i] = K * (1.0 / h / h);
-		B[i].init(n);
 		B[i] = Al + K * (2.0 / h / h) + D;
-		C[i].init(n);
 		C[i] = K * (1.0 / h / h);
-		F[i].init(n);
 	}
 
-	matrix E(n);
-	vector Fl(n);
+	mat E(n, n, fill::zeros);
+	vec Fl(n, fill::zeros);
 	for (int i = 0; i < n; i++) {
 		E(i, i) = left(i);
 		if (left(i) == 1)
 			continue;
-		vector l(n);
+		vec l(n, fill::zeros);
 		l(i) = P_LEFT;
 		Fl = Fl + A[0] * l;
 	}
-	matrix Bl(n);
+	mat Bl(n, n, fill::zeros);
 	Bl = A[0] * E;
 
-	vector Fr(n);
+	vec Fr(n, fill::zeros);
 	for (int i = 0; i < n; i++) {
 		E(i, i) = right(i);
 		if (right(i) == 1)
 			continue;
-		vector r(n);
+		vec r(n, fill::zeros);
 		r(i) = P_RIGHT;
 		Fr = Fr + C[l - 1] * r;
 	}
-	matrix Br(n);
+	mat Br(n, n, fill::zeros);
 	Br = C[l - 1] * E;
 
 	B[0] = B[0] - Bl;
@@ -213,22 +202,16 @@ int main(int argc, char **argv)
 {
 	// the problem size
 	uint n = 8;
-	std::vector<vector> u(L);
-	std::vector<vector> u1(L);
+	vector<vec> u(L, vec(n, fill::zeros));
+	vector<vec> u1(L, vec(n, fill::zeros));
 
-	/* due to the specific realization of std containers */
-	for (int i = 0; i < L; i++) {
-		u[i].init(n);
-		u1[i].init(n);
-	}
-
-	std::cout << "The dimension of prodlem: " << n << std::endl;
-	std::cout << "The length = " << L << ", the time = " << TIME << std::endl;
-	std::cout << "Space step = " << h << ", time step = " << t << std::endl;
+	cout << "The dimension of prodlem: " << n << endl;
+	cout << "The length = " << L << ", the time = " << TIME << endl;
+	cout << "Space step = " << h << ", time step = " << t << endl;
 
 	tracer_problem(n, u, u1);
 
-	std::cout << "DONE" << std::endl;
+	cout << "DONE" << endl;
 	return 0;
 }
 

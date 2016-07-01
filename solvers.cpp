@@ -10,10 +10,21 @@
 #include <math.h>
 
 #include "solvers.h"
-//#include "matrixes.h"
+#include "matrixes.h"
 
 #define ETA 1
 #define h 1.0
+
+static vec& mult(const vec& a, const vec&b)
+{
+	assert(a.n_rows == b.n_rows);
+	int n = a.n_rows;
+	vec *c = (vec *) new vec(n, fill::zeros);
+	for (int i = 0; i < n; i++) {
+		c->at(i) = a(i) * b(i);
+	}
+	return *c;
+}
 
 progonka::progonka(uint n_size, uint length)
 {
@@ -67,108 +78,22 @@ void progonka::calculate(vector<vec>& u1,
 	Qs.clear();
 };
 
-#if 0
-corner::corner(uint n_size, uint length)
-{
-	n = n_size;
-	l = length;
-	assert(n >= 0);
-
-	matrix K_ini(n);
-	get_K(K_ini);
-
-	K = new matrix(n);
-	*K = K_ini * (1.0 / ETA);
-
-	D = new matrix(n);
-	get_D(*D);
-
-	perm = new vector(n);
-	for (int i = 0; i < n; i++)
-		(*perm)(i) = (*K)(i, i);
-};
-
-corner::~corner()
-{
-	delete K;
-	delete D;
-};
-
-void corner::left_edge(vector<vec>& C1)
-{
-	uint n = C1[0].size();
-	vector left(n);
-	get_left_edge(left);
-
-	for (int i = 0; i < n; i++)
-		C1[0](i) = left(i) ? 0 : 1;
-};
-
-void corner::right_edge(vector<vec>& C1)
-{
-	/* for all classes of pores: dC/dx = 0 */
-	uint n = C1[0].size();
-	for (int i = 0; i < n; i++)
-		C1[l](i) = C1[l - 1](i);
-};
-
-void corner::calculate(	const vector<vec>& v_med,
-			const vector<vec>& p,
-			const vector<vec>& C,
-			vector<vec>& C1, double dt)
-{
-	vector v(n);
-	vector crt(n);
-	vector crt_1(n);
-	vector q(n);
-
-	for (int x = 1; x < l; x++) {
-		/* split on physical processes */
-		/* 1. calculate dC/dt + U dC/dx = 0 */
-		v = (*perm).mult(v_med[x]);
-
-		crt = C[x];
-		crt_1 = C[x + 1];
-		C1[x] = C[x];
-		C1[x] = C1[x] - ((v.dif_abs()).mult(crt_1 - C[x]) +
-			(v.add_abs()).mult(crt - C[x - 1])) * (dt / 2.0 / h);
-
-		/* 2. calculate additional mass transfer dC/dt + U dC/dx = q */
-		/* q = -C(i|Pi >= Pj, i != j / j) D(i,j) (Pi - Pj) */
-
-		for (int i = 0; i < n; i++) {
-			q(i) = 0;
-			for (int j = 0; j < n; j++) {
-				if (i == j)
-					continue;
-				q(i) += ((p[x](i) >= p[x](j)) ? C1[x](i) : C1[x](j)) *
-					((*D)(i,j)) * (p[x](i) - p[x](j));
-			}
-
-			C1[x](i) += q(i) * dt;
-			if (C1[x](i) < 0)
-				C1[x](i) = 0;
-		}
-
-	}
-};
-
 secondord::secondord(uint n_size, uint length)
 {
 	n = n_size;
 	l = length;
 	assert(n >= 0);
 
-	matrix K_ini(n);
+	mat K_ini(n, n, fill::zeros);
 	get_K(K_ini);
 
-	K = new matrix(n);
+	K = new mat(n, n, fill::zeros);
 	*K = K_ini * (1.0 / ETA);
 
-	D = new matrix(n);
+	D = new mat(n, n, fill::zeros);
 	get_D(*D);
 
-	perm = new vector(n);
+	perm = new vec(n, fill::zeros);
 	for (int i = 0; i < n; i++)
 		(*perm)(i) = (*K)(i, i);
 };
@@ -182,7 +107,7 @@ secondord::~secondord()
 void secondord::left_edge(vector<vec>& C1)
 {
 	uint n = C1[0].size();
-	vector left(n);
+	vec left(n, fill::zeros);
 	get_left_edge(left);
 
 	for (int i = 0; i < n; i++) {
@@ -206,73 +131,52 @@ void secondord::calculate(const vector<vec>& v_med,
 			const vector<vec>& C,
 			vector<vec>& C1, double dt)
 {
-	vector v(n);
-	vector c1(n);
-	vector c2(n);
+	vec v(n, fill::zeros);
+	vec c1(n, fill::zeros);
+	vec c2(n, fill::zeros);
 
-	vector c_i(n);
-	vector c_im1(n);
-	vector c_ip1(n);
-	vector c_im2(n);
-	vector c_ip2(n);
+	vec c_i(n, fill::zeros);
+	vec c_im1(n, fill::zeros);
+	vec c_ip1(n, fill::zeros);
+	vec c_im2(n, fill::zeros);
+	vec c_ip2(n, fill::zeros);
 
-	vector Dm(n);
-	vector Dp(n);
-	vector Dmm(n);
-	vector Dpp(n);
+	vec Dm(n, fill::zeros);
+	vec Dp(n, fill::zeros);
+	vec Dmm(n, fill::zeros);
+	vec Dpp(n, fill::zeros);
 
-	vector Qp(n);
-	vector Qm(n);
+	vec Qp(n, fill::zeros);
+	vec Qm(n, fill::zeros);
 
-	vector q(n);
-
-	vector crt(n);
+	vec q(n, fill::zeros);
 
 	for (int x = 3; x < l - 3; x++) {
 		/* split on physical processes */
 		/* 1. calculate dC/dt + U dC/dx = 0 */
-		v = (*perm).mult(v_med[x]);
+		// TODO add func mult for two vec
+		v = mult(*perm, v_med[x]);
 		// v = (*K) * v_med[x];
 
-		crt = C[x];
-		c1 = C[x];
-		c1 = c1 - (crt - C[x - 1]).mult(v) * (dt / h);
-		crt = C[x + 1];
-		c2 = C[x + 1];
-		c2 = c2 - (crt - C[x]).mult(v) * (dt / h);
-		c_i = (c1 + C[x] - (c2 - c1).mult(v) * (dt / h)) * 0.5;
+		c1 = C[x] - mult(C[x] - C[x - 1], v) * (dt / h);
+		c2 = C[x + 1] - mult(C[x + 1] - C[x], v) * (dt / h);
+		c_i = (c1 + C[x] - mult(c2 - c1, v) * (dt / h)) * 0.5;
 
-		crt = C[x - 1];
-		c1 = C[x - 1];
-		c1 = c1 - (crt - C[x - 2]).mult(v) * (dt / h);
-		crt = C[x];
-		c2 = C[x];
-		c2 = c2 - (crt - C[x - 1]).mult(v) * (dt / h);
-		c_im1 = (c1 + C[x - 1] - (c2 - c1).mult(v) * (dt / h)) * 0.5;
+		c1 = C[x - 1] - mult(C[x - 1] - C[x - 2], v) * (dt / h);
+		c2 = C[x] - mult(C[x] - C[x - 1], v) * (dt / h);
+		c_im1 = (c1 + C[x - 1] - mult(c2 - c1, v) * (dt / h)) * 0.5;
 
-		crt = C[x + 1];
-		c1 = C[x + 1];
-		c1 = c1 - (crt - C[x]).mult(v) * (dt / h);
-		crt = C[x + 2];
-		c2 = C[x + 2];
-		c2 = c2 - (crt - C[x + 1]).mult(v) * (dt / h);
-		c_ip1 = (c1 + C[x + 1] - (c2 - c1).mult(v) * (dt / h)) * 0.5;
+		c1 = C[x + 1] - mult(C[x + 1] - C[x], v) * (dt / h);
+		c2 = C[x + 2] - mult(C[x + 2] - C[x + 1], v) * (dt / h);
+		c_ip1 = (c1 + C[x + 1] - mult(c2 - c1, v) * (dt / h)) * 0.5;
 
-		crt = C[x - 2];
-		c1 = C[x - 2];
-		c1 = c1 - (crt - C[x - 3]).mult(v) * (dt / h);
-		crt = C[x - 1];
-		c2 = C[x - 1];
-		c2 = c2 - (crt - C[x - 2]).mult(v) * (dt / h);
-		c_im2 = (c1 + C[x - 2] - (c2 - c1).mult(v) * (dt / h)) * 0.5;
+		c1 = C[x - 2] - mult(C[x - 2] - C[x - 3], v) * (dt / h);
+		c2 = C[x - 1] - mult(C[x - 1] - C[x - 2], v) * (dt / h);
+		c_im2 = (c1 + C[x - 2] - mult(c2 - c1, v) * (dt / h)) * 0.5;
 
-		crt = C[x + 2];
-		c1 = C[x + 2];
-		c1 = c1 - (crt - C[x + 1]).mult(v) * (dt / h);
-		crt = C[x + 3];
-		c2 = C[x + 3];
-		c2 = c2 - (crt - C[x + 2]).mult(v) * (dt / h);
-		c_ip2 = (c1 + C[x + 2] - (c2 - c1).mult(v) * (dt / h)) * 0.5;
+		c1 = C[x + 2] - mult(C[x + 2] - C[x + 1], v) * (dt / h);
+		c2 = C[x + 3] - mult(C[x + 3] - C[x + 2], v) * (dt / h);
+		c_ip2 = (c1 + C[x + 2] - mult(c2 - c1, v) * (dt / h)) * 0.5;
 
 		Dm = c_i - c_im1;
 		Dp = c_ip1 - c_i;
@@ -305,5 +209,4 @@ void secondord::calculate(const vector<vec>& v_med,
 
 	}
 };
-#endif
 

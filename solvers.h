@@ -31,26 +31,6 @@ private:
 	uint l;
 };
 
-#if 0
-class corner
-{
-public:
-	corner(uint n_size, uint length);
-	~corner();
-	void calculate( const vector<vec>& v_med,
-			const vector<vec>& p,
-			const vector<vec>& C,
-			vector<vec>& C1, double dt);
-private:
-	void left_edge(vector<vec>& C1);
-	void right_edge(vector<vec>& C1);
-	uint n;
-	uint l;
-	matrix *K;
-	matrix *D;
-	vector *perm;
-};
-
 class secondord
 {
 public:
@@ -65,9 +45,8 @@ private:
 	void right_edge(vector<vec>& C1);
 	uint n;
 	uint l;
-	matrix *K;
-	matrix *D;
-	vector *perm;
+	mat *K;
+	mat *D;
+	vec *perm;
 };
-#endif
 #endif // _SLB_SOLVERS_LIB
