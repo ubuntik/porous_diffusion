@@ -1,0 +1,6 @@
+1) install OpenBlas
+2) install Lapack
+3) install Armadillo
+	http://arma.sourceforge.net/download.html
+	version 7.200.2
+
