@@ -34,19 +34,18 @@ private:
 class secondord
 {
 public:
-	secondord(uint n_size, uint length);
+	secondord(uint n_size, uint length, vector<mat> *Ki, vector<mat> *Di);
 	~secondord();
 	void calculate( const vector<vec>& v_med,
 			const vector<vec>& p,
-			const vector<vec>& C,
-			vector<vec>& C1, double dt);
+			const vector<vec>& C, vector<vec>& C1,
+			double dt);
 private:
 	void left_edge(vector<vec>& C1);
 	void right_edge(vector<vec>& C1);
+	vector<mat> *K;
+	vector<mat> *D;
 	uint n;
 	uint l;
-	mat *K;
-	mat *D;
-	vec *perm;
 };
 #endif // _SLB_SOLVERS_LIB

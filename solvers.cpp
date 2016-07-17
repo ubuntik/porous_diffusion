@@ -78,31 +78,18 @@ void progonka::calculate(vector<vec>& u1,
 	Qs.clear();
 };
 
-secondord::secondord(uint n_size, uint length)
+secondord::secondord(uint n_size, uint length,
+			vector<mat> *Ki, vector<mat> *Di)
 {
 	n = n_size;
 	l = length;
 	assert(n >= 0);
-
-	mat K_ini(n, n, fill::zeros);
-	get_K(K_ini);
-
-	K = new mat(n, n, fill::zeros);
-	*K = K_ini * (1.0 / ETA);
-
-	D = new mat(n, n, fill::zeros);
-	get_D(*D);
-
-	perm = new vec(n, fill::zeros);
-	for (int i = 0; i < n; i++)
-		(*perm)(i) = (*K)(i, i);
+	K = Ki;
+	D = Di;
 };
 
 secondord::~secondord()
-{
-	delete K;
-	delete D;
-};
+{};
 
 void secondord::left_edge(vector<vec>& C1)
 {
@@ -128,8 +115,8 @@ void secondord::right_edge(vector<vec>& C1)
 
 void secondord::calculate(const vector<vec>& v_med,
 			const vector<vec>& p,
-			const vector<vec>& C,
-			vector<vec>& C1, double dt)
+			const vector<vec>& C, vector<vec>& C1,
+			double dt)
 {
 	vec v(n, fill::zeros);
 	vec c1(n, fill::zeros);
@@ -155,8 +142,8 @@ void secondord::calculate(const vector<vec>& v_med,
 		/* split on physical processes */
 		/* 1. calculate dC/dt + U dC/dx = 0 */
 		// TODO add func mult for two vec
-		v = mult(*perm, v_med[x]);
-		// v = (*K) * v_med[x];
+		//v = mult(*perm, v_med[x]);
+		v = (*K)[x] * v_med[x];
 
 		c1 = C[x] - mult(C[x] - C[x - 1], v) * (dt / h);
 		c2 = C[x + 1] - mult(C[x + 1] - C[x], v) * (dt / h);
@@ -199,7 +186,7 @@ void secondord::calculate(const vector<vec>& v_med,
 				if (i == j)
 					continue;
 				q(i) += ((p[x](i) >= p[x](j)) ? C1[x](i) : C1[x](j)) *
-					((*D)(i,j)) * (p[x](i) - p[x](j));
+					((*D)[x](i,j)) * (p[x](i) - p[x](j));
 			}
 
 			C1[x](i) += q(i) * dt;

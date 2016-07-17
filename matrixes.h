@@ -7,8 +7,20 @@
 #ifndef _SLB_MATRIXES
 #define _SLB_MATRIXES
 
-static void get_K(mat &K)
+static void get_Al(vector<mat> &Al_arr)
 {
+	int n = Al_arr[0].n_rows;
+	mat Al(n, n, fill::eye);
+
+	for (int i = 0; i < Al_arr.size(); i++) {
+		Al_arr[i] = Al;
+	}
+}
+
+static void get_K(vector<mat> &K_arr)
+{
+	int n = K_arr[0].n_rows;
+	mat K(n, n, fill::zeros);
 	K(0, 0) = 700.72; K(1, 0) = -90.791; K(2, 0) = -51.8508; K(3, 0) = -20.9356;
 	K(4, 0) = -16.6301; K(5, 0) = -36.7135; K(6, 0) = -12.6038; K(7, 0) = -11.0965;
 
@@ -32,10 +44,16 @@ static void get_K(mat &K)
 
 	K(0, 7) = -11.1; K(1, 7) = 6.64; K(2, 7) = 20.7; K(3, 7) = 18.4;
 	K(4, 7) = 13.1; K(5, 7) = 18.6; K(6, 7) = 23.8; K(7, 7) = 68.8;
+
+	for (int i = 0; i < K_arr.size(); i++) {
+		K_arr[i] = K;
+	}
 }
 
-static void get_D(mat &D)
+static void get_D(vector<mat> &D_arr)
 {
+	int n = D_arr[0].n_rows;
+	mat D(n, n, fill::zeros);
 	D(0, 0) = 0.00579; D(1, 0) = -0.00135; D(2, 0) = -0.00060; D(3, 0) = -0.00051;
 	D(4, 0) = -0.00054; D(5, 0) = -0.00072; D(6, 0) = -0.00097; D(7, 0) = -0.00111;
 
@@ -59,6 +77,10 @@ static void get_D(mat &D)
 
 	D(0, 7) = -0.00112; D(1, 7) = -0.00083; D(2, 7) = -0.00043; D(3, 7) = -0.00039;
 	D(4, 7) = -0.00041; D(5, 7) = -0.00056; D(6, 7) = -0.00071; D(7, 7) = 0.00445;
+
+	for (int i = 0; i < D_arr.size(); i++) {
+		D_arr[i] = D;
+	}
 }
 
 static void get_left_edge(vec &left)

@@ -17,10 +17,10 @@
 
 #define TR_START 10
 
-#define PRNT 100
-#define TIME 20000
-#define t 1.0
-#define L 500
+#define PRNT 1
+#define TIME 200
+#define t 0.5
+#define L 200
 #define h 1.0
 #define P_LEFT 1.0
 #define P_RIGHT 0.0
@@ -84,13 +84,13 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 	char buf[256];
 	double time = (double)TIME / t;
 	uint l = L - 2; // exept edge points
-	mat ee(n, n, fill::eye);
-	mat Al(n, n, fill::zeros);
-	Al = ee * (1.0 / t);
-	mat K(n, n, fill::zeros);
-	get_K(K);
-	mat D(n, n, fill::zeros);
-	get_D(D);
+//	mat ee(n, n, fill::eye);
+//	mat Al(n, n, fill::zeros);
+//	Al = ee * (1.0 / t);
+//	mat K(n, n, fill::zeros);
+//	mat D(n, n, fill::zeros);
+//	get_K(K);
+//	get_D(D);
 
 	start_cond(p);
 
@@ -101,6 +101,13 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 	vector<vec> c(L + 1, vec(n, fill::zeros));
 	vector<vec> c1(L + 1, vec(n, fill::zeros));
 	vector<vec> c_slice(L + 1, vec(n, fill::zeros));
+
+	vector<mat> Al(L, vec(n, fill::zeros));
+	get_Al(Al);
+	vector<mat> K(L, vec(n, fill::zeros));
+	get_K(K);
+	vector<mat> D(L, vec(n, fill::zeros));
+	get_D(D);
 
 	start_cond_con(c);
 
@@ -115,9 +122,15 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 	vector<vec> F(l, vec(n, fill::zeros));
 
 	for (int i = 0; i < l; i++) {
-		A[i] = K * (1.0 / h / h);
-		B[i] = Al + K * (2.0 / h / h) + D;
-		C[i] = K * (1.0 / h / h);
+		mat Kp(n, n, fill::zeros);
+		Kp = (2 * K[i + 1] * K[i + 2]) / (K[i + 1] + K[i + 2]);
+		mat Km(n, n, fill::zeros);
+		Km = (2 * K[i] * K[i + 1]) / (K[i] + K[i + 1]);
+		A[i] = Km * (1.0 / h / h);
+		B[i] = Al[i + 1] * (1.0 / t) +
+			Km * (1.0 / h / h) +
+			Kp * (1.0 / h / h) + D[i + 1];
+		C[i] = Kp * (1.0 / h / h);
 	}
 
 	mat E(n, n, fill::zeros);
@@ -149,11 +162,12 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 	B[l - 1] = B[l - 1] - Br;
 
 	progonka gone(n, l);
-	secondord turn(n, L);
+	secondord turn(n, L, &K, &D);
 
 	for (int i = 0; i < time; i++) {
 		for (int i = 0; i < l; i++)
-			F[i] = Al * p[i + 1] * (-1);    // u[i + 1] -> start from 1-st index, not 0
+			// u[i + 1] -> start from 1-st index, not 0
+			F[i] = Al[i + 1] * p[i + 1] * (-1 / t);
 		F[0] = F[0] - Fl;
 		F[l - 1] = F[l - 1] - Fr;
 
