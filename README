@@ -21,3 +21,10 @@ cd porous_diffusion
 make tracer
 ./tracer
 look at OOM
+
+About code:
+tracer.cpp - the main file with parameters
+solvers.cpp - the file with numerical methods (progonka for pressure and secondord for concentration)
+matrix.h - file with matrixes K, D and left-right conditions (= 1 is free: dp/dx = 0)
+
+
