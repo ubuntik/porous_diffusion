@@ -1,13 +1,20 @@
+HOWTO install to Centos 7
+(cannot install to ubuntu)
+
 1) install OpenBlas
 	wget http://github.com/xianyi/OpenBLAS/archive/v0.2.18.tar.gz
 	tar xzvf v0.2.18.tar.gz
 	cd OpenBLAS-0.2.18
+	cmake .
 	make
 	sudo make install
 2) install Lapack
-	from http://www.netlib.org/lapack/lapack-3.6.1.tgz
-	or for ubuntu:
-		sudo apt-get install liblapack-dev
+	wget http://www.netlib.org/lapack/lapack-3.6.1.tgz
+	cd lapack-3.6.1
+	cmake .
+	make
+	sudo make install
+
 3) install Armadillo
 	wget http://sourceforge.net/projects/arma/files/armadillo-7.200.2.tar.xz
 	tar xJvf armadillo-7.200.2.tar.xz
@@ -18,6 +25,7 @@
 
 git clone https://github.com/ubuntik/porous_diffusion.git
 cd porous_diffusion
+add to Makefile CFLAGS -lgfortran
 make tracer
 ./tracer
 look at OOM
