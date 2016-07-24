@@ -16,9 +16,9 @@
 
 #define PRNT 1
 #define TIME 100
-#define t 1
+#define t 0.1
 #define L 100
-#define h 1.0
+#define h 0.5
 #define P_LEFT 1.0
 #define P_RIGHT 0.0
 
@@ -43,6 +43,13 @@ void direct_problem(uint n, vector<vec>& u, vector<vec>& u1)
 	mat D(n, n, fill::zeros);
 	get_D(D);
 
+//	vector<mat> Al(L, vec(n, fill::zeros));
+//	get_Al(Al);
+//	vector<mat> K(L, vec(n, fill::zeros));
+//	get_K(K);
+//	vector<mat> D(L, vec(n, fill::zeros));
+//	get_D(D);
+
 	start_cond(u);
 	sprintf(buf, "res/data_000000.vtk");
 	write_to_vtk1(u, buf, n, L);
@@ -58,9 +65,27 @@ void direct_problem(uint n, vector<vec>& u, vector<vec>& u1)
 	vector<vec> F(l, vec(n, fill::zeros));
 
 	for (int i = 0; i < l; i++) {
-		A[i] = K * (1.0 / h / h);
-		B[i] = Al + K * (2.0 / h / h) + D;
-		C[i] = K * (1.0 / h / h);
+		mat Kp(n, n, fill::zeros);
+		Kp = (2 * K * K) / (K + K);
+		mat Km(n, n, fill::zeros);
+		Km = (2 * K * K) / (K + K);
+		A[i] = Km * (1.0 / h / h);
+		B[i] = Al * (1.0 / t) +
+			Km * (1.0 / h / h) +
+			Kp * (1.0 / h / h) + D[i + 1];
+		C[i] = Kp * (1.0 / h / h);
+
+/*
+		mat Kp(n, n, fill::zeros);
+		Kp = (2 * K[i + 1] * K[i + 2]) / (K[i + 1] + K[i + 2]);
+		mat Km(n, n, fill::zeros);
+		Km = (2 * K[i] * K[i + 1]) / (K[i] + K[i + 1]);
+		A[i] = Km * (1.0 / h / h);
+		B[i] = Al[i + 1] * (1.0 / t) +
+			Km * (1.0 / h / h) +
+			Kp * (1.0 / h / h) + D[i + 1];
+		C[i] = Kp * (1.0 / h / h);
+*/
 	}
 
 	mat E(n, n, fill::zeros);
@@ -95,7 +120,9 @@ void direct_problem(uint n, vector<vec>& u, vector<vec>& u1)
 
 	for (int i = 1; i < time; i++) {
 		for (int i = 0; i < l; i++)
-			F[i] = Al * u[i + 1] * (-1);    // u[i + 1] -> start from 1-st index, not 0
+			// u[i + 1] -> start from 1-st index, not 0
+			//F[i] = Al[i + 1] * u[i + 1] * (-1 / t);;
+			F[i] = Al * u[i + 1] * (-1 / t);;
 		F[0] = F[0] - Fl;
 		F[l - 1] = F[l - 1] - Fr;
 
