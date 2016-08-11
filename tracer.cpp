@@ -18,9 +18,9 @@
 #define TR_START 10
 
 #define PRNT 1
-#define TIME 200
+#define TIME 100
 #define t 0.5
-#define L 200
+#define L 100
 #define h 1.0
 #define P_LEFT 1.0
 #define P_RIGHT 0.0
@@ -123,9 +123,9 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 
 	for (int i = 0; i < l; i++) {
 		mat Kp(n, n, fill::zeros);
-		Kp = (2 * K[i + 1] * K[i + 2]) / (K[i + 1] + K[i + 2]);
+		Kp = (2 * K[i + 1] * K[i + 2]) * ((K[i + 1] + K[i + 2]).i());
 		mat Km(n, n, fill::zeros);
-		Km = (2 * K[i] * K[i + 1]) / (K[i] + K[i + 1]);
+		Km = (2 * K[i] * K[i + 1]) * ((K[i] + K[i + 1]).i());
 		A[i] = Km * (1.0 / h / h);
 		B[i] = Al[i + 1] * (1.0 / t) +
 			Km * (1.0 / h / h) +
