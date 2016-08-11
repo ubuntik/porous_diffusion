@@ -74,8 +74,8 @@ void progonka::calculate(vector<vec>& u1,
 	for (int i = l - 1; i > 0; i--)
 		u1[i] = (Ps[i] * u1[i + 1]) + Qs[i];
 
-	Ps.clear();
-	Qs.clear();
+//	Ps.clear();
+//	Qs.clear();
 };
 
 secondord::secondord(uint n_size, uint length,

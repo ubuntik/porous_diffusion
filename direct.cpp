@@ -16,9 +16,9 @@
 
 #define PRNT 1
 #define TIME 100
-#define t 0.1
+#define t 0.5
 #define L 100
-#define h 0.5
+#define h 1
 #define P_LEFT 1.0
 #define P_RIGHT 0.0
 
@@ -36,19 +36,12 @@ void direct_problem(uint n, vector<vec>& u, vector<vec>& u1)
 	char buf[256];
 	double time = (double)TIME / t;
 	uint l = L - 2; // exept edge points
-	mat e(n, n, fill::eye);
-	mat Al = e * (1.0/t);
-	mat K(n, n, fill::zeros);
+	vector<mat> Al(L, vec(n, fill::zeros));
+	get_Al(Al);
+	vector<mat> K(L, vec(n, fill::zeros));
 	get_K(K);
-	mat D(n, n, fill::zeros);
+	vector<mat> D(L, vec(n, fill::zeros));
 	get_D(D);
-
-//	vector<mat> Al(L, vec(n, fill::zeros));
-//	get_Al(Al);
-//	vector<mat> K(L, vec(n, fill::zeros));
-//	get_K(K);
-//	vector<mat> D(L, vec(n, fill::zeros));
-//	get_D(D);
 
 	start_cond(u);
 	sprintf(buf, "res/data_000000.vtk");
@@ -65,27 +58,16 @@ void direct_problem(uint n, vector<vec>& u, vector<vec>& u1)
 	vector<vec> F(l, vec(n, fill::zeros));
 
 	for (int i = 0; i < l; i++) {
+		// i + 1 for Al(x), K(x), D(x) to exclude boundary points
 		mat Kp(n, n, fill::zeros);
-		Kp = (2 * K * K) / (K + K);
+		Kp = (2 * K[i + 1] * K[i + 2]) * ((K[i + 1] + K[i + 2]).i());
 		mat Km(n, n, fill::zeros);
-		Km = (2 * K * K) / (K + K);
-		A[i] = Km * (1.0 / h / h);
-		B[i] = Al * (1.0 / t) +
-			Km * (1.0 / h / h) +
-			Kp * (1.0 / h / h) + D[i + 1];
-		C[i] = Kp * (1.0 / h / h);
-
-/*
-		mat Kp(n, n, fill::zeros);
-		Kp = (2 * K[i + 1] * K[i + 2]) / (K[i + 1] + K[i + 2]);
-		mat Km(n, n, fill::zeros);
-		Km = (2 * K[i] * K[i + 1]) / (K[i] + K[i + 1]);
+		Km = (2 * K[i] * K[i + 1]) * ((K[i] + K[i + 1]).i());
 		A[i] = Km * (1.0 / h / h);
 		B[i] = Al[i + 1] * (1.0 / t) +
 			Km * (1.0 / h / h) +
 			Kp * (1.0 / h / h) + D[i + 1];
 		C[i] = Kp * (1.0 / h / h);
-*/
 	}
 
 	mat E(n, n, fill::zeros);
@@ -119,17 +101,17 @@ void direct_problem(uint n, vector<vec>& u, vector<vec>& u1)
 	progonka method(n, l);
 
 	for (int i = 1; i < time; i++) {
-		for (int i = 0; i < l; i++)
+		for (int j = 0; j < l; j++)
 			// u[i + 1] -> start from 1-st index, not 0
-			//F[i] = Al[i + 1] * u[i + 1] * (-1 / t);;
-			F[i] = Al * u[i + 1] * (-1 / t);;
+			F[j] = Al[j + 1] * u[j + 1] * (-1.0 / t);
 		F[0] = F[0] - Fl;
 		F[l - 1] = F[l - 1] - Fr;
 
 		method.calculate(u1, A, B, C, F);
-		for (int i = 0; i < n; i++) {
-			u1[0](i) = left(i) ? u1[1](i) : P_LEFT;
-			u1[L - 1](i) = right(i) ? u1[L - 2](i) : P_RIGHT;
+
+		for (int j = 0; j < n; j++) {
+			u1[0](j) = left(j) ? u1[1](j) : P_LEFT;
+			u1[L - 1](j) = right(j) ? u1[L - 2](j) : P_RIGHT;
 		}
 
 		if (i % PRNT == 0) {
