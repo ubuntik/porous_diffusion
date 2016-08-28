@@ -144,6 +144,8 @@ void secondord::calculate(const vector<vec>& v_med,
 		// TODO add func mult for two vec
 		//v = mult(*perm, v_med[x]);
 		v = (*K)[x] * v_med[x];
+		for (int k = 0; k < n; k++)
+			v[k] = v[k] / 0.8;
 
 		c1 = C[x] - mult(C[x] - C[x - 1], v) * (dt / h);
 		c2 = C[x + 1] - mult(C[x + 1] - C[x], v) * (dt / h);

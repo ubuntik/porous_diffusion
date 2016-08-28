@@ -84,13 +84,6 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 	char buf[256];
 	double time = (double)TIME / t;
 	uint l = L - 2; // exept edge points
-//	mat ee(n, n, fill::eye);
-//	mat Al(n, n, fill::zeros);
-//	Al = ee * (1.0 / t);
-//	mat K(n, n, fill::zeros);
-//	mat D(n, n, fill::zeros);
-//	get_K(K);
-//	get_D(D);
 
 	start_cond(p);
 
@@ -102,11 +95,11 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 	vector<vec> c1(L + 1, vec(n, fill::zeros));
 	vector<vec> c_slice(L + 1, vec(n, fill::zeros));
 
-	vector<mat> Al(L, vec(n, fill::zeros));
+	vector<mat> Al(L, mat(n, n, fill::zeros));
 	get_Al(Al);
-	vector<mat> K(L, vec(n, fill::zeros));
+	vector<mat> K(L, mat(n, n, fill::zeros));
 	get_K(K);
-	vector<mat> D(L, vec(n, fill::zeros));
+	vector<mat> D(L, mat(n, n, fill::zeros));
 	get_D(D);
 
 	start_cond_con(c);
