@@ -14,7 +14,7 @@ using namespace arma;
 
 void write_to_vtk1(vector<vec>& u, const char *path, uint n, uint l)
 {
-	FILE *f = fopen(path, "w");
+	FILE *f = fopen(path, "w+");
 	if (f == NULL) {
 		cerr << "Cannot open file " << path << endl;
 		exit(-1);
@@ -40,7 +40,7 @@ void write_to_vtk1(vector<vec>& u, const char *path, uint n, uint l)
 
 void write_to_vtk2(vector<vec>& u, const char *path, uint n, uint l, double crt_time)
 {
-	FILE *f = fopen(path, "w");
+	FILE *f = fopen(path, "w+");
 	if (f == NULL) {
 		cerr << "Cannot open file " << path << endl;
 		exit(-1);
@@ -72,7 +72,7 @@ void write_to_vtk2(vector<vec>& u, const char *path, uint n, uint l, double crt_
 
 void write_to_vtk3(vector< vector<vec> >& u, const char *path, uint n, uint l, uint t)
 {
-	FILE *f = fopen(path, "w");
+	FILE *f = fopen(path, "w+");
 	if (f == NULL) {
 		cerr << "Cannot open file " << path << endl;
 		exit(-1);
@@ -99,12 +99,11 @@ void write_to_vtk3(vector< vector<vec> >& u, const char *path, uint n, uint l, u
 void write_to_vtk2d(vector<vec>& u, const char *path, const char *data,
 			const int N[2], const double hh[2])
 {
-	FILE *f;
+	FILE *f = fopen(path, "w+");
 	if (f == NULL) {
 		cerr << "Cannot open file " << path << endl;
 		exit(-1);
 	}
-	f = fopen(path, "w");
 	fprintf(f, "# vtk DataFile Version 3.0\n");
 	fprintf(f, "Created by write_to_vtk2d\n");
 	fprintf(f, "ASCII\n");

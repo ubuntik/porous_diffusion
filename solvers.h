@@ -36,7 +36,7 @@ class secondord
 public:
 	secondord(uint n_size, uint length, vector<mat> *Ki, vector<mat> *Di);
 	~secondord();
-	void calculate( const vector<vec>& v_med,
+	void calculate( const vector<vec>& v,
 			const vector<vec>& p,
 			const vector<vec>& C, vector<vec>& C1,
 			double dt);

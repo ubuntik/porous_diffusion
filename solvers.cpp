@@ -113,12 +113,11 @@ void secondord::right_edge(vector<vec>& C1)
 	}
 };
 
-void secondord::calculate(const vector<vec>& v_med,
+void secondord::calculate(const vector<vec>& v,
 			const vector<vec>& p,
 			const vector<vec>& C, vector<vec>& C1,
 			double dt)
 {
-	vec v(n, fill::zeros);
 	vec c1(n, fill::zeros);
 	vec c2(n, fill::zeros);
 
@@ -141,31 +140,25 @@ void secondord::calculate(const vector<vec>& v_med,
 	for (int x = 3; x < l - 3; x++) {
 		/* split on physical processes */
 		/* 1. calculate dC/dt + U dC/dx = 0 */
-		// TODO add func mult for two vec
-		//v = mult(*perm, v_med[x]);
-		v = (*K)[x] * v_med[x];
-		for (int k = 0; k < n; k++)
-			v[k] = v[k] / 0.8;
+		c1 = C[x] - mult(C[x] - C[x - 1], v[x]) * (dt / h);
+		c2 = C[x + 1] - mult(C[x + 1] - C[x], v[x + 1]) * (dt / h);
+		c_i = (c1 + C[x] - mult(c2 - c1, v[x]) * (dt / h)) * 0.5;
 
-		c1 = C[x] - mult(C[x] - C[x - 1], v) * (dt / h);
-		c2 = C[x + 1] - mult(C[x + 1] - C[x], v) * (dt / h);
-		c_i = (c1 + C[x] - mult(c2 - c1, v) * (dt / h)) * 0.5;
+		c1 = C[x - 1] - mult(C[x - 1] - C[x - 2], v[x - 1]) * (dt / h);
+		c2 = C[x] - mult(C[x] - C[x - 1], v[x]) * (dt / h);
+		c_im1 = (c1 + C[x - 1] - mult(c2 - c1, v[x - 1]) * (dt / h)) * 0.5;
 
-		c1 = C[x - 1] - mult(C[x - 1] - C[x - 2], v) * (dt / h);
-		c2 = C[x] - mult(C[x] - C[x - 1], v) * (dt / h);
-		c_im1 = (c1 + C[x - 1] - mult(c2 - c1, v) * (dt / h)) * 0.5;
+		c1 = C[x + 1] - mult(C[x + 1] - C[x], v[x + 1]) * (dt / h);
+		c2 = C[x + 2] - mult(C[x + 2] - C[x + 1], v[x + 2]) * (dt / h);
+		c_ip1 = (c1 + C[x + 1] - mult(c2 - c1, v[x + 1]) * (dt / h)) * 0.5;
 
-		c1 = C[x + 1] - mult(C[x + 1] - C[x], v) * (dt / h);
-		c2 = C[x + 2] - mult(C[x + 2] - C[x + 1], v) * (dt / h);
-		c_ip1 = (c1 + C[x + 1] - mult(c2 - c1, v) * (dt / h)) * 0.5;
+		c1 = C[x - 2] - mult(C[x - 2] - C[x - 3], v[x - 2]) * (dt / h);
+		c2 = C[x - 1] - mult(C[x - 1] - C[x - 2], v[x - 1]) * (dt / h);
+		c_im2 = (c1 + C[x - 2] - mult(c2 - c1, v[x - 2]) * (dt / h)) * 0.5;
 
-		c1 = C[x - 2] - mult(C[x - 2] - C[x - 3], v) * (dt / h);
-		c2 = C[x - 1] - mult(C[x - 1] - C[x - 2], v) * (dt / h);
-		c_im2 = (c1 + C[x - 2] - mult(c2 - c1, v) * (dt / h)) * 0.5;
-
-		c1 = C[x + 2] - mult(C[x + 2] - C[x + 1], v) * (dt / h);
-		c2 = C[x + 3] - mult(C[x + 3] - C[x + 2], v) * (dt / h);
-		c_ip2 = (c1 + C[x + 2] - mult(c2 - c1, v) * (dt / h)) * 0.5;
+		c1 = C[x + 2] - mult(C[x + 2] - C[x + 1], v[x + 2]) * (dt / h);
+		c2 = C[x + 3] - mult(C[x + 3] - C[x + 2], v[x + 3]) * (dt / h);
+		c_ip2 = (c1 + C[x + 2] - mult(c2 - c1, v[x + 2]) * (dt / h)) * 0.5;
 
 		Dm = c_i - c_im1;
 		Dp = c_ip1 - c_i;

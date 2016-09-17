@@ -91,6 +91,7 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 	int N[2] = {L, n}; /* Число точек расчетной области по осям */
 
 	vector<vec> v_med(L + 1, vec(n, fill::zeros));
+	vector<vec> v(L + 1, vec(n, fill::zeros));
 	vector<vec> c(L + 1, vec(n, fill::zeros));
 	vector<vec> c1(L + 1, vec(n, fill::zeros));
 	vector<vec> c_slice(L + 1, vec(n, fill::zeros));
@@ -157,7 +158,7 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 	progonka gone(n, l);
 	secondord turn(n, L, &K, &D);
 
-	for (int i = 0; i < time; i++) {
+	for (int dt = 0; dt < time; dt++) {
 		for (int i = 0; i < l; i++)
 			// u[i + 1] -> start from 1-st index, not 0
 			F[i] = Al[i + 1] * p[i + 1] * (-1 / t);
@@ -171,6 +172,12 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 		}
 
 		grad(n, p, p1, v_med);
+
+		for (int i = 1; i < L; i++)
+			v[i] = K[i] * v_med[i];
+		v[0] = v[1];
+		v[L] = v[L - 1];
+
 		// prepare to calculate next step by corner
 		double c_time = (double)CURANT * h / maximum(v_med);
 		uint steps = (double)t / c_time + 1;
@@ -178,25 +185,24 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 		for (int i = 0; i < n; i++)
 			c1[0](i) = c1[1](i); //left(i) ? 0 : 1;
 
-		for (int j = 0; j < steps; j++) {
-			turn.calculate(v_med, p1, c, c1, c_time);
-		}
+		for (int j = 0; j < steps; j++)
+			turn.calculate(v, p1, c, c1, c_time);
 
 		for (int i = 0; i < n; i++)
 			c1[L](i) = c1[L - 1](i);
 
-		if (i % PRNT == 0) {
+		if (dt % PRNT == 0) {
 			N[0] = L;
 
-			sprintf(buf, "res/pres_%06d.vtk", i);
+			sprintf(buf, "res/pres_%06d.vtk", dt);
 			write_to_vtk2d(p, buf, "pressure", N, hh);
 
-			sprintf(buf, "res/data_%06d.vtk", i);
+			sprintf(buf, "res/data_%06d.vtk", dt);
 			write_to_vtk1(p, buf, n, L);
 
 			N[0] = L + 1;
 
-			sprintf(buf, "res/conc_%06d.vtk", i);
+			sprintf(buf, "res/conc_%06d.vtk", dt);
 			write_to_vtk2d(c, buf, "concentration", N, hh);
 		}
 
