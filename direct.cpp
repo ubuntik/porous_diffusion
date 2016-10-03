@@ -15,10 +15,10 @@
 #include "matrixes.h"
 
 #define PRNT 1
-#define TIME 100
-#define t 0.5
+#define TIME 200
+#define t 0.25
 #define L 100
-#define h 1
+#define h 0.5
 #define P_LEFT 1.0
 #define P_RIGHT 0.0
 
@@ -100,7 +100,7 @@ void direct_problem(uint n, vector<vec>& u, vector<vec>& u1)
 
 	progonka method(n, l);
 
-	for (int i = 1; i < time; i++) {
+	for (int dt = 1; dt < time; dt++) {
 		for (int j = 0; j < l; j++)
 			// u[i + 1] -> start from 1-st index, not 0
 			F[j] = Al[j + 1] * u[j + 1] * (-1.0 / t);
@@ -114,8 +114,8 @@ void direct_problem(uint n, vector<vec>& u, vector<vec>& u1)
 			u1[L - 1](j) = right(j) ? u1[L - 2](j) : P_RIGHT;
 		}
 
-		if (i % PRNT == 0) {
-			sprintf(buf, "res/data_%06d.vtk", i);
+		if (dt % PRNT == 0) {
+			sprintf(buf, "res/data_%06d.vtk", dt);
 			write_to_vtk1(u1, buf, n, L);
 		}
 

@@ -15,17 +15,6 @@
 #define ETA 1
 #define h 1.0
 
-static vec& mult(const vec& a, const vec&b)
-{
-	assert(a.n_rows == b.n_rows);
-	int n = a.n_rows;
-	vec *c = (vec *) new vec(n, fill::zeros);
-	for (int i = 0; i < n; i++) {
-		c->at(i) = a(i) * b(i);
-	}
-	return *c;
-}
-
 progonka::progonka(uint n_size, uint length)
 {
 	n = n_size;
@@ -45,7 +34,12 @@ void progonka::calculate(vector<vec>& u1,
 	mat G(n, n, fill::zeros);
 
 	// Ps[0] and Qs[0] are not used
-	mat inver = inv(B[0]);
+	mat inver(n, n, fill::zeros);
+	try {
+		inver = inv(B[0]);
+	} catch (...) {
+		inver = pinv(B[0]);
+	}
 	Ps[1] = inver * C[0];
 	Qs[1] = -inver * F[0];
 
@@ -140,25 +134,25 @@ void secondord::calculate(const vector<vec>& v,
 	for (int x = 3; x < l - 3; x++) {
 		/* split on physical processes */
 		/* 1. calculate dC/dt + U dC/dx = 0 */
-		c1 = C[x] - mult(C[x] - C[x - 1], v[x]) * (dt / h);
-		c2 = C[x + 1] - mult(C[x + 1] - C[x], v[x + 1]) * (dt / h);
-		c_i = (c1 + C[x] - mult(c2 - c1, v[x]) * (dt / h)) * 0.5;
+		c1 = C[x] - ((C[x] - C[x - 1]) % v[x]) * (dt / h);
+		c2 = C[x + 1] - ((C[x + 1] - C[x]) % v[x + 1]) * (dt / h);
+		c_i = (c1 + C[x] - ((c2 - c1) % v[x]) * (dt / h)) * 0.5;
 
-		c1 = C[x - 1] - mult(C[x - 1] - C[x - 2], v[x - 1]) * (dt / h);
-		c2 = C[x] - mult(C[x] - C[x - 1], v[x]) * (dt / h);
-		c_im1 = (c1 + C[x - 1] - mult(c2 - c1, v[x - 1]) * (dt / h)) * 0.5;
+		c1 = C[x - 1] - ((C[x - 1] - C[x - 2]) % v[x - 1]) * (dt / h);
+		c2 = C[x] - ((C[x] - C[x - 1]) % v[x]) * (dt / h);
+		c_im1 = (c1 + C[x - 1] - ((c2 - c1) % v[x - 1]) * (dt / h)) * 0.5;
 
-		c1 = C[x + 1] - mult(C[x + 1] - C[x], v[x + 1]) * (dt / h);
-		c2 = C[x + 2] - mult(C[x + 2] - C[x + 1], v[x + 2]) * (dt / h);
-		c_ip1 = (c1 + C[x + 1] - mult(c2 - c1, v[x + 1]) * (dt / h)) * 0.5;
+		c1 = C[x + 1] - ((C[x + 1] - C[x]) % v[x + 1]) * (dt / h);
+		c2 = C[x + 2] - ((C[x + 2] - C[x + 1]) % v[x + 2]) * (dt / h);
+		c_ip1 = (c1 + C[x + 1] - ((c2 - c1) % v[x + 1]) * (dt / h)) * 0.5;
 
-		c1 = C[x - 2] - mult(C[x - 2] - C[x - 3], v[x - 2]) * (dt / h);
-		c2 = C[x - 1] - mult(C[x - 1] - C[x - 2], v[x - 1]) * (dt / h);
-		c_im2 = (c1 + C[x - 2] - mult(c2 - c1, v[x - 2]) * (dt / h)) * 0.5;
+		c1 = C[x - 2] - ((C[x - 2] - C[x - 3]) % v[x - 2]) * (dt / h);
+		c2 = C[x - 1] - ((C[x - 1] - C[x - 2]) % v[x - 1]) * (dt / h);
+		c_im2 = (c1 + C[x - 2] - ((c2 - c1) % v[x - 2]) * (dt / h)) * 0.5;
 
-		c1 = C[x + 2] - mult(C[x + 2] - C[x + 1], v[x + 2]) * (dt / h);
-		c2 = C[x + 3] - mult(C[x + 3] - C[x + 2], v[x + 3]) * (dt / h);
-		c_ip2 = (c1 + C[x + 2] - mult(c2 - c1, v[x + 2]) * (dt / h)) * 0.5;
+		c1 = C[x + 2] - ((C[x + 2] - C[x + 1]) % v[x + 2]) * (dt / h);
+		c2 = C[x + 3] - ((C[x + 3] - C[x + 2]) % v[x + 3]) * (dt / h);
+		c_ip2 = (c1 + C[x + 2] - ((c2 - c1) % v[x + 2]) * (dt / h)) * 0.5;
 
 		Dm = c_i - c_im1;
 		Dp = c_ip1 - c_i;

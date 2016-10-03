@@ -16,18 +16,20 @@
 #include "matrixes.h"
 
 #define TR_START 10
+#define WC_PNT 180
 
 #define PRNT 1
-#define TIME 100
+#define TIME 5000
 #define t 0.5
-#define L 100
-#define h 1.0
+#define L 200
+#define h 1
 #define P_LEFT 1.0
 #define P_RIGHT 0.0
 // coefficient for tracer calculation (0 <= THETA <= 1)
 #define THETA 0.5
+#define VISC 0.8
 // curant
-#define CURANT 0.001
+#define CURANT 0.1
 
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
@@ -59,9 +61,9 @@ void grad(uint n, vector<vec>& p,
 
 	for (int i = 1; i < L; i++) {
 		v = p[i - 1] - p[i];
-		v = v * (1.0 / h);
+		v = v * (1.0 / h / VISC);
 		v1 = p1[i - 1] - p1[i];
-		v1 = v1 * (1.0 / h);
+		v1 = v1 * (1.0 / h / VISC);
 		v_med[i] = v1 * THETA + v * (1.0 - THETA);
 	}
 	v_med[0] = v_med[1];
@@ -87,14 +89,15 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 
 	start_cond(p);
 
-	double hh[2] = {h, 40.0}; /* Шаг сетки */
+	double hh[2] = {h, 15.0}; /* Шаг сетки */
 	int N[2] = {L, n}; /* Число точек расчетной области по осям */
 
 	vector<vec> v_med(L + 1, vec(n, fill::zeros));
 	vector<vec> v(L + 1, vec(n, fill::zeros));
 	vector<vec> c(L + 1, vec(n, fill::zeros));
 	vector<vec> c1(L + 1, vec(n, fill::zeros));
-	vector<vec> c_slice(L + 1, vec(n, fill::zeros));
+	vector<double> wcpr(time, 0.0);
+	vector<double> wcpt(time, 0.0);
 
 	vector<mat> Al(L, mat(n, n, fill::zeros));
 	get_Al(Al);
@@ -117,9 +120,17 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 
 	for (int i = 0; i < l; i++) {
 		mat Kp(n, n, fill::zeros);
-		Kp = (2 * K[i + 1] * K[i + 2]) * ((K[i + 1] + K[i + 2]).i());
+		try {
+			Kp = (2 * K[i + 1] * K[i + 2]) * inv(K[i + 1] + K[i + 2]);
+		} catch(...) {
+			Kp = (2 * K[i + 1] * K[i + 2]) * pinv(K[i + 1] + K[i + 2]);
+		}
 		mat Km(n, n, fill::zeros);
-		Km = (2 * K[i] * K[i + 1]) * ((K[i] + K[i + 1]).i());
+		try {
+			Km = (2 * K[i] * K[i + 1]) * inv(K[i] + K[i + 1]);
+		} catch (...) {
+			Km = (2 * K[i] * K[i + 1]) * pinv(K[i] + K[i + 1]);
+		}
 		A[i] = Km * (1.0 / h / h);
 		B[i] = Al[i + 1] * (1.0 / t) +
 			Km * (1.0 / h / h) +
@@ -179,7 +190,7 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 		v[L] = v[L - 1];
 
 		// prepare to calculate next step by corner
-		double c_time = (double)CURANT * h / maximum(v_med);
+		double c_time = (double)CURANT * h / maximum(v);
 		uint steps = (double)t / c_time + 1;
 
 		for (int i = 0; i < n; i++)
@@ -188,27 +199,34 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 		for (int j = 0; j < steps; j++)
 			turn.calculate(v, p1, c, c1, c_time);
 
-		for (int i = 0; i < n; i++)
+		for (int i = 0; i < n; i++) {
 			c1[L](i) = c1[L - 1](i);
+			// total rate and total product
+			wcpr[dt] += c1[WC_PNT](i) * v[WC_PNT](i);
+		}
+		if (dt != 0)
+			wcpt[dt] += wcpt[dt - 1] + wcpr[dt] * t;
 
 		if (dt % PRNT == 0) {
-			N[0] = L;
-
-			sprintf(buf, "res/pres_%06d.vtk", dt);
-			write_to_vtk2d(p, buf, "pressure", N, hh);
-
 			sprintf(buf, "res/data_%06d.vtk", dt);
 			write_to_vtk1(p, buf, n, L);
 
-			N[0] = L + 1;
+			N[0] = L;
 
 			sprintf(buf, "res/conc_%06d.vtk", dt);
 			write_to_vtk2d(c, buf, "concentration", N, hh);
+
+			sprintf(buf, "res/velo_%06d.vtk", dt);
+			write_to_vtk2d(v, buf, "velocity", N, hh);
 		}
 
 		c = c1;
 		p = p1;
 	}
+	sprintf(buf, "res/wcpr.vtk");
+	write_plain_data(wcpr, buf, time);
+	sprintf(buf, "res/wcpt.vtk");
+	write_plain_data(wcpt, buf, time);
 }
 
 int main(int argc, char **argv)

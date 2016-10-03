@@ -18,6 +18,8 @@ typedef unsigned int uint;
 
 #define START 1
 
+void write_plain_data(vector<double>& u, const char *path, uint l);
+
 void write_to_vtk1(vector<vec>& u, const char *path, uint n, uint l);
 
 void write_to_vtk2(vector<vec>& u, const char *path, uint n, uint l, double crt_time);

@@ -12,6 +12,30 @@
 
 using namespace arma;
 
+void write_plain_data(vector<double>& u, const char *path, uint l)
+{
+	FILE *f = fopen(path, "w+");
+	if (f == NULL) {
+		cerr << "Cannot open file " << path << endl;
+		exit(-1);
+	}
+	fprintf(f, "# vtk DataFile Version 3.0\n");
+	fprintf(f, "Created by write_to_vtk1\n");
+	fprintf(f, "ASCII\n");
+	fprintf(f, "DATASET STRUCTURED_POINTS\n");
+	fprintf(f, "DIMENSIONS %g 1 1\n", (double)l);
+	fprintf(f, "SPACING 1.0 0.0 0.0\n");
+	fprintf(f, "ORIGIN 0 0.0 0.0\n");
+	fprintf(f, "POINT_DATA %g\n", (double)l);
+	fprintf(f, "SCALARS %s float 1\n", "wc");
+	fprintf(f, "LOOKUP_TABLE %s_table\n", "wc");
+
+	for (int i = 0; i < l; i++) {
+		fprintf(f, "%0.6f\n", u[i]);
+	}
+	fclose(f);
+}
+
 void write_to_vtk1(vector<vec>& u, const char *path, uint n, uint l)
 {
 	FILE *f = fopen(path, "w+");
