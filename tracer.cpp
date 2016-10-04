@@ -15,21 +15,21 @@
 #include "vtk.h"
 #include "matrixes.h"
 
-#define TR_START 0
-#define WC_PNT 180
+#define TR_START 5
+#define WC_PNT 90
 
 #define PRNT 100
-#define TIME 5000
+#define TIME 700
 #define t 0.1
 #define L 100
-#define h 0.5
+#define h 0.1
 #define P_LEFT 1.0
 #define P_RIGHT 0.0
 // coefficient for tracer calculation (0 <= THETA <= 1)
 #define THETA 0.5
 #define VISC 0.8
 // curant
-#define CURANT 0.1
+#define CURANT 0.5
 
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
@@ -77,19 +77,25 @@ void start_cond_con(vector<vec>& C)
 	vec left(n, fill::zeros);
 	get_left_edge(left);
 	/* free edge -> close C=0, fixed edge -> pressure C=1 */
-	for (int i = 0; i < n; i++)
+	for (int i = 0; i < n; i++) {
 		C.at(TR_START)(i) = 1; //left(i) ? 0 : 1;
+		if (TR_START == 0) {
+			C.at(1)(i) = 1; //left(i) ? 0 : 1;
+			C.at(2)(i) = 1; //left(i) ? 0 : 1;
+		}
+	}
 };
 
 void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 {
 	char buf[256];
 	double time = (double)TIME / t;
+	double pres_time = 10.0 / t;
 	uint l = L - 2; // exept edge points
 
 	start_cond(p);
 
-	double hh[2] = {h, 15.0}; /* Шаг сетки */
+	double hh[2] = {h, 1.0}; /* Шаг сетки */
 	int N[2] = {L, n}; /* Число точек расчетной области по осям */
 
 	vector<vec> v_med(L + 1, vec(n, fill::zeros));
@@ -171,7 +177,7 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 	progonka gone(n, l);
 	secondord turn(n, L, &K, &D);
 
-	for (int dt = 0; dt < time; dt++) {
+	for (int dt = 0; dt < pres_time; dt++) {
 		for (int i = 0; i < l; i++)
 			// u[i + 1] -> start from 1-st index, not 0
 			F[i] = Al[i + 1] * p[i + 1] * (-1 / t);
@@ -184,22 +190,40 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 			p1[L - 1](i) = right(i) ? p1[L - 2](i) : P_RIGHT;
 		}
 
-		grad(n, p, p1, v_med);
+		sprintf(buf, "res/data_%06d.vtk", dt);
+		write_to_vtk1(p, buf, n, L);
+		if (dt != time - 1)
+			p = p1;
+	}
 
-		for (int i = 1; i < L; i++)
-			v[i] = K[i] * v_med[i];
-		v[0] = v[1];
-		v[L] = v[L - 1];
+	grad(n, p, p1, v_med);
 
-		// prepare to calculate next step by corner
-		double c_time = (double)CURANT * h / maximum(v);
-		uint steps = (double)t / c_time + 1;
+	for (int i = 1; i < L; i++)
+		v[i] = K[i] * v_med[i];
+	v[0] = v[1];
+	v[L] = v[L - 1];
 
-		for (int i = 0; i < n; i++)
-			c1[0](i) = 1; //c1[1](i); //left(i) ? 0 : 1;
+	cout << "Velocity: " << endl; v[0].print(); cout << endl;
+
+	// prepare to calculate next step by corner
+	double c_time = (double)CURANT * h / maximum(v);
+	uint steps = (double)t / c_time + 1;
+
+//	cout << "Progonka is done: corner steps = " << steps << endl;
+
+	for (int dt = 0; dt < time; dt++) {
+		for (int i = 0; i < n; i++) {
+			c1[0](i) = c1[1](i); //left(i) ? 0 : 1;
+			if (TR_START == 0) {
+				c1[1](i) = 1; //left(i) ? 0 : 1;
+				c1[2](i) = 1; //left(i) ? 0 : 1;
+			}
+		}
 
 		for (int j = 0; j < steps; j++)
 			turn.calculate(v, p1, c, c1, c_time);
+
+//		cout << "Corner is done" << endl;
 
 		for (int i = 0; i < n; i++) {
 			c1[L](i) = c1[L - 1](i);
@@ -207,13 +231,10 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 			wcpr[dt] += c1[WC_PNT](i) * v[WC_PNT](i);
 		}
 		if (dt != 0)
-			wcpt[dt] += wcpt[dt - 1] + wcpr[dt] * t;
+			wcpt[dt] = wcpt[dt - 1] + wcpr[dt] * t;
 
 		if (dt % PRNT == 0) {
-			sprintf(buf, "res/data_%06d.vtk", dt);
-			write_to_vtk1(p, buf, n, L);
-
-			N[0] = L;
+			N[0] = L - 3;
 
 			sprintf(buf, "res/conc_%06d.vtk", dt);
 			write_to_vtk2d(c, buf, "concentration", N, hh);
@@ -223,12 +244,12 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 		}
 
 		c = c1;
-		p = p1;
 	}
 	sprintf(buf, "res/wcpr.vtk");
 	write_plain_data(wcpr, buf, time);
 	sprintf(buf, "res/wcpt.vtk");
 	write_plain_data(wcpt, buf, time);
+
 }
 
 int main(int argc, char **argv)

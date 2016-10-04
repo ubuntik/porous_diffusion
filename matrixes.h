@@ -7,6 +7,8 @@
 #ifndef _SLB_MATRIXES
 #define _SLB_MATRIXES
 
+#define POR 0.238
+
 static void get_Al(vector<mat> &Al_arr)
 {
 	int n = Al_arr[0].n_rows;
@@ -73,17 +75,17 @@ static void get_K(vector<mat> &K_arr)
 	K0(0, 7) = 0.0; K0(1, 7) = 0.0; K0(2, 7) = 0.0; K0(3, 7) = 0.0;
 	K0(4, 7) = 0.0; K0(5, 7) = 0.0; K0(6, 7) = 0.0; K0(7, 7) = 0.0;
 
-/*
 	for (int i = 0; i < l; i++)
-		K_arr[i] = K;
-*/
+		K_arr[i] = K * POR;
 
+/*
 	for (int i = 0; i < l* 0.2; i++)
 		K_arr[i] = K;
 	for (int i = l * 0.2; i < l * 0.8; i++)
 		K_arr[i] = K0;
 	for (int i = l * 0.8; i < l; i++)
 		K_arr[i] = K;
+*/
 
 }
 
@@ -143,18 +145,18 @@ static void get_D(vector<mat> &D_arr)
 	D0(0, 7) = 0.0; D0(1, 7) = 0.0; D0(2, 7) = 0.0; D0(3, 7) = 0.0;
 	D0(4, 7) = 0.0; D0(5, 7) = 0.0; D0(6, 7) = 0.0; D0(7, 7) = 0.0;
 
-/*
 	for (int i = 0; i < l; i++)
-		D_arr[i] = D * 10;
-*/
+		D_arr[i] = D * POR;
 
+
+/*
 	for (int i = 0; i < l * 0.2; i++)
 		D_arr[i] = D * 10;
 	for (int i = l * 0.2; i < l * 0.8; i++)
 		D_arr[i] = D0 * 10;
 	for (int i = l * 0.8; i < l; i++)
 		D_arr[i] = D * 10;
-
+*/
 }
 
 static void get_left_edge(vec &left)
