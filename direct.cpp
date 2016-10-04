@@ -15,8 +15,8 @@
 #include "matrixes.h"
 
 #define PRNT 1
-#define TIME 200
-#define t 0.25
+#define TIME 10
+#define t 0.1
 #define L 100
 #define h 0.5
 #define P_LEFT 1.0
@@ -60,9 +60,20 @@ void direct_problem(uint n, vector<vec>& u, vector<vec>& u1)
 	for (int i = 0; i < l; i++) {
 		// i + 1 for Al(x), K(x), D(x) to exclude boundary points
 		mat Kp(n, n, fill::zeros);
-		Kp = (2 * K[i + 1] * K[i + 2]) * ((K[i + 1] + K[i + 2]).i());
+//		try {
+//			Kp = (2 * K[i + 1] * K[i + 2]) * inv(K[i + 1] + K[i + 2]);
+//		} catch(...) {
+			Kp = (K[i + 1] + K[i + 2]) * 0.5;
+//			Kp = (2 * K[i + 1] * K[i + 2]) * pinv(K[i + 1] + K[i + 2]);
+//		}
 		mat Km(n, n, fill::zeros);
-		Km = (2 * K[i] * K[i + 1]) * ((K[i] + K[i + 1]).i());
+//		try {
+//			Km = (2 * K[i] * K[i + 1]) * inv(K[i] + K[i + 1]);
+//		} catch (...) {
+			Km = (K[i] + K[i + 1]) * 0.5;
+//			Km = (2 * K[i] * K[i + 1]) * pinv(K[i] + K[i + 1]);
+//		}
+
 		A[i] = Km * (1.0 / h / h);
 		B[i] = Al[i + 1] * (1.0 / t) +
 			Km * (1.0 / h / h) +
