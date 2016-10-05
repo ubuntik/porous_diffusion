@@ -1,38 +1,55 @@
-HOWTO install to Centos 7
-(cannot install to ubuntu)
+README
 
-1) install OpenBlas
-	wget http://github.com/xianyi/OpenBLAS/archive/v0.2.18.tar.gz
-	tar xzvf v0.2.18.tar.gz
-	cd OpenBLAS-0.2.18
-	cmake .
-	make
-	sudo make install
-2) install Lapack
-	wget http://www.netlib.org/lapack/lapack-3.6.1.tgz
-	cd lapack-3.6.1
-	cmake .
-	make
-	sudo make install
+This project is used for numerical calculations for meso-scale mathematical models of porous media.
+See more about meso-scale models at
+O.Yu. Dinariev, D.N. Mikhailov Basics of mesoscale theory for porous materials
+	LLC “Publishing house Nedra”, 2012 – 245 p.
 
-3) install Armadillo
-	wget http://sourceforge.net/projects/arma/files/armadillo-7.200.2.tar.xz
-	tar xJvf armadillo-7.200.2.tar.xz
-	cd armadillo-7.200.2
-	cmake .
-	make
-	sudo make install
+@author Anna Subbotina
 
-git clone https://github.com/ubuntik/porous_diffusion.git
-cd porous_diffusion
-add to Makefile CFLAGS -lgfortran
-make tracer
-./tracer
-look at OOM
+SOURCES
 
-About code:
-tracer.cpp - the main file with parameters
-solvers.cpp - the file with numerical methods (progonka for pressure and secondord for concentration)
-matrix.h - file with matrixes K, D and left-right conditions (= 1 is free: dp/dx = 0)
+direct.cpp
+	Solving the problem of the single phase isothermal flow transport [eq. 2.2.31, p.63]
+	Al(x) dp(t,x)/dt - d(K(x) dp(t,x)/dx)/dx + D(x) p(t,x) = 0
 
+tracer.cpp
+	Solving the problem of the concentration of a passive admixture []
+	dC(t,x)/dt - U(x) dC(t,x)/dx = q(t,x)
+		where q(x) = -C(i | Pi(x) >= Pj(x), i != j / j) D(i,j)(x) (Pi(x) - Pj(x))
+
+matrix.h
+	Configuration file with matrixes K, D and left-right edge conditions
+
+Additional files:
+
+my libs:
+solvers.cpp/solvers.h
+	Realisation of numerical methods (progonka/Thomas method, simple implicit 2-nd order method)
+
+vtk.cpp/vtk.h
+	Functions for dumping data to files for paraview
+
+lalgebra.cpp/lalgebra.h
+	Not used, now the Armadillo lib is used for matrixes and vectors arithmetic
+
+meso.cpp
+	Old problem for the concentration of a passive admixture
+
+simple_ODE.cpp
+	Comparison with the accurate solution (K = 0)
+
+compare.cpp
+	Comparison with the accurate solution (D = 0)
+
+unit_tests:
+	tests for my lib lalgebra - not used
+	test for solving the system of linear equations: test_lapack
+	test for Thomas numerical method (progonka): due to edge conditions see comments in the solvers.cpp
+
+HOWTO
+
+make tracer or make direct
+./tracer or ./direct
+results will be in the res/
 

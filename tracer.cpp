@@ -15,7 +15,9 @@
 #include "vtk.h"
 #include "matrixes.h"
 
+// point where we start to propagate a passive admixture
 #define TR_START 5
+// point where we count the product rate and product total
 #define WC_PNT 90
 
 #define PRNT 100
@@ -27,6 +29,7 @@
 #define P_RIGHT 0.0
 // coefficient for tracer calculation (0 <= THETA <= 1)
 #define THETA 0.5
+// viscosity = 0.8 10^-3 m^2
 #define VISC 0.8
 // curant
 #define CURANT 0.5
@@ -34,6 +37,7 @@
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 
+// start conditions for pressure
 void start_cond(vector<vec>& u)
 {
 	uint n = u[0].size();
@@ -43,6 +47,7 @@ void start_cond(vector<vec>& u)
 	}
 };
 
+// cludge for calculating velocity
 double maximum(vector<vec>& v_med)
 {
 	double ret = 0;
@@ -52,6 +57,7 @@ double maximum(vector<vec>& v_med)
 	return ret;
 }
 
+// calculate the velocity
 void grad(uint n, vector<vec>& p,
 		  vector<vec>& p1,
 		  vector<vec>& v_med)
@@ -70,7 +76,7 @@ void grad(uint n, vector<vec>& p,
 	v_med[L] = v_med[L - 1];
 }
 
-
+// start conditions for concentration of a passive admixture
 void start_cond_con(vector<vec>& C)
 {
 	uint n = C[0].size();
@@ -79,6 +85,7 @@ void start_cond_con(vector<vec>& C)
 	/* free edge -> close C=0, fixed edge -> pressure C=1 */
 	for (int i = 0; i < n; i++) {
 		C.at(TR_START)(i) = 1; //left(i) ? 0 : 1;
+		// cludge due to the 2-nd order schema
 		if (TR_START == 0) {
 			C.at(1)(i) = 1; //left(i) ? 0 : 1;
 			C.at(2)(i) = 1; //left(i) ? 0 : 1;
@@ -95,8 +102,9 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 
 	start_cond(p);
 
-	double hh[2] = {h, 1.0}; /* Шаг сетки */
-	int N[2] = {L, n}; /* Число точек расчетной области по осям */
+	/* Steps in the visualisation */
+	double hh[2] = {h, 1.0};
+	int N[2] = {L, n};
 
 	vector<vec> v_med(L + 1, vec(n, fill::zeros));
 	vector<vec> v(L + 1, vec(n, fill::zeros));
@@ -119,6 +127,7 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 	vec right(n, fill::zeros);
 	get_right_edge(right);
 
+	// thomas's method coefficients
 	vector<mat> A(l, mat(n, n, fill::zeros));
 	vector<mat> B(l, mat(n, n, fill::zeros));
 	vector<mat> C(l, mat(n, n, fill::zeros));
@@ -146,6 +155,7 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 		C[i] = Kp * (1.0 / h / h);
 	}
 
+	// calculate the thomas's method coefficients on the edges
 	mat E(n, n, fill::zeros);
 	vec Fl(n, fill::zeros);
 	for (int i = 0; i < n; i++) {
@@ -177,10 +187,13 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 	progonka gone(n, l);
 	secondord turn(n, L, &K, &D);
 
+	// calculate when the pressure became the stable
 	for (int dt = 0; dt < pres_time; dt++) {
 		for (int i = 0; i < l; i++)
 			// u[i + 1] -> start from 1-st index, not 0
 			F[i] = Al[i + 1] * p[i + 1] * (-1 / t);
+
+		// edge conditions for pressure
 		F[0] = F[0] - Fl;
 		F[l - 1] = F[l - 1] - Fr;
 
@@ -196,6 +209,7 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 			p = p1;
 	}
 
+	// calculate the velocity
 	grad(n, p, p1, v_med);
 
 	for (int i = 1; i < L; i++)
@@ -205,13 +219,14 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 
 	cout << "Velocity: " << endl; v[0].print(); cout << endl;
 
-	// prepare to calculate next step by corner
+	// prepare to calculate next step by the simple implicit schema
 	double c_time = (double)CURANT * h / maximum(v);
 	uint steps = (double)t / c_time + 1;
 
-//	cout << "Progonka is done: corner steps = " << steps << endl;
+//	cout << "Progonka is done: steps = " << steps << endl;
 
 	for (int dt = 0; dt < time; dt++) {
+		// edge conditions for concentration (left)
 		for (int i = 0; i < n; i++) {
 			c1[0](i) = c1[1](i); //left(i) ? 0 : 1;
 			if (TR_START == 0) {
@@ -223,8 +238,7 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 		for (int j = 0; j < steps; j++)
 			turn.calculate(v, p1, c, c1, c_time);
 
-//		cout << "Corner is done" << endl;
-
+		// edge conditions for concentration (right)
 		for (int i = 0; i < n; i++) {
 			c1[L](i) = c1[L - 1](i);
 			// total rate and total product
@@ -238,9 +252,6 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 
 			sprintf(buf, "res/conc_%06d.vtk", dt);
 			write_to_vtk2d(c, buf, "concentration", N, hh);
-
-			sprintf(buf, "res/velo_%06d.vtk", dt);
-			write_to_vtk2d(v, buf, "velocity", N, hh);
 		}
 
 		c = c1;

@@ -7,7 +7,12 @@
 #ifndef _SLB_MATRIXES
 #define _SLB_MATRIXES
 
+// porosity
 #define POR 0.238
+
+
+// coefficients for the problem of the single phase isothermal flow transport
+// Al(x) dp(t,x)/dt - d(K(x) dp(t,x)/dx)/dx + D(x) p(t,x) = 0
 
 static void get_Al(vector<mat> &Al_arr)
 {
@@ -145,6 +150,8 @@ static void get_D(vector<mat> &D_arr)
 	D0(0, 7) = 0.0; D0(1, 7) = 0.0; D0(2, 7) = 0.0; D0(3, 7) = 0.0;
 	D0(4, 7) = 0.0; D0(5, 7) = 0.0; D0(6, 7) = 0.0; D0(7, 7) = 0.0;
 
+
+	// * on the exchange rate (may be from 0.1 to 10)
 	for (int i = 0; i < l; i++)
 		D_arr[i] = D * POR;
 
@@ -159,6 +166,10 @@ static void get_D(vector<mat> &D_arr)
 */
 }
 
+
+//edge conditions
+//	1 - fixed point (free edge)
+//	0 - dp/dx = 0 (closed edge)
 static void get_left_edge(vec &left)
 {
 

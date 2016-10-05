@@ -1,5 +1,5 @@
 /*
- * @file main.cpp
+ * @file vtk.cpp
  *
  * @author Anna Subbotina
  *
