@@ -1,0 +1,28 @@
+HOWTO
+(example of installation on Centos 7.0)
+
+1) install OpenBlas
+	wget http://github.com/xianyi/OpenBLAS/archive/v0.2.18.tar.gz
+	tar xzvf v0.2.18.tar.gz
+	cd OpenBLAS-0.2.18
+	cmake .
+	make
+	sudo make install
+2) install Lapack
+	wget http://www.netlib.org/lapack/lapack-3.6.1.tgz
+	cd lapack-3.6.1
+	cmake .
+	make
+	sudo make install
+
+3) install Armadillo
+	wget http://sourceforge.net/projects/arma/files/armadillo-7.200.2.tar.xz
+	tar xJvf armadillo-7.200.2.tar.xz
+	cd armadillo-7.200.2
+	cmake .
+	make
+	sudo make install
+
+git clone https://github.com/ubuntik/porous_diffusion.git
+cd porous_diffusion
+
