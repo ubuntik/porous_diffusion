@@ -39,7 +39,7 @@ public:
 	void calculate( const vector<vec>& v,
 			const vector<vec>& p,
 			const vector<vec>& C, vector<vec>& C1,
-			double dt);
+			double dt, double h);
 private:
 	void left_edge(vector<vec>& C1);
 	void right_edge(vector<vec>& C1);
