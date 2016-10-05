@@ -14,7 +14,7 @@ direct.cpp
 	Al(x) dp(t,x)/dt - d(K(x) dp(t,x)/dx)/dx + D(x) p(t,x) = 0
 
 tracer.cpp
-	Solving the problem of the concentration of a passive admixture []
+	Solving the problem of the concentration of a passive admixture [eq. 3.2.1.2, p.91]
 	dC(t,x)/dt - U(x) dC(t,x)/dx = q(t,x)
 		where q(x) = -C(i | Pi(x) >= Pj(x), i != j / j) D(i,j)(x) (Pi(x) - Pj(x))
 

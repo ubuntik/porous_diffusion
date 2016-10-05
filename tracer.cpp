@@ -236,7 +236,7 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 		}
 
 		for (int j = 0; j < steps; j++)
-			turn.calculate(v, p1, c, c1, c_time);
+			turn.calculate(v, p1, c, c1, c_time, h);
 
 		// edge conditions for concentration (right)
 		for (int i = 0; i < n; i++) {
