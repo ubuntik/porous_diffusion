@@ -62,14 +62,7 @@ void direct_problem(uint n, vector<vec>& u, vector<vec>& u1)
 		mat Kp(n, n, fill::zeros);
 		mat Km(n, n, fill::zeros);
 
-		mat K1(n, n, fill::zeros);
-		K1 = K[i + 1] + K[i + 2];
-		double *a = K1.memptr();
-		ll_inverse(a, n);
-		mat K2(a, n, n);
-		Kp = (2 * K[i + 1] * K[i + 2]) * K2; // inv(K[i + 1] + K[i + 2]);
-
-//		Kp = (K[i + 1] + K[i + 2]) * 0.5;
+		Kp = (K[i + 1] + K[i + 2]) * 0.5;
 /*
 		try {
 			Kp = (2 * K[i + 1] * K[i + 2]) * inv(K[i + 1] + K[i + 2]);
@@ -79,13 +72,7 @@ void direct_problem(uint n, vector<vec>& u, vector<vec>& u1)
 		}
 */
 
-		K1 = K[i] + K[i + 1];
-		a = K1.memptr();
-		ll_inverse(a, n);
-		mat K3(a, n, n);
-		Km = (2 * K[i] * K[i + 1]) * K3; // inv(K[i] + K[i + 1]);
-
-//		Km = (K[i] + K[i + 1]) * 0.5;
+		Km = (K[i] + K[i + 1]) * 0.5;
 /*
 		try {
 			Km = (2 * K[i] * K[i + 1]) * inv(K[i] + K[i + 1]);
