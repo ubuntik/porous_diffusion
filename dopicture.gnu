@@ -34,12 +34,12 @@ set style line 8 lc rgb 'black' pt 1 ps 0.25 lt 1 lw 2 # --- indigo
 
 set key top right
 
-set title 'Sample #9'
+set title 'Sample #9 (D = 10^-8)'
 set xlabel 'x'
-#set ylabel 'p(t)'
-set ylabel "C(x,{/Symbol z})"
-set xrange [0:500]
-set yrange [0:0.35]
+set ylabel 'p(t)'
+#set ylabel "C(x,{/Symbol z})"
+set xrange [0:200]
+set yrange [0.99:1.1]
 
 
 plot 'plot.dat' u 1:2 t 'p7' w lp ls 1, \

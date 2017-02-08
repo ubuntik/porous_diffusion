@@ -14,11 +14,11 @@
 #include "vtk.h"
 #include "matrixes.h"
 
-#define PRNT 1
-#define TIME 10
-#define t 0.01
-#define L 100
-#define h 0.5
+#define PRNT 10
+#define TIME 20
+#define t 0.001
+#define L 200
+#define h 0.05
 #define P_LEFT 1.1
 #define P_RIGHT 1.0
 
@@ -62,25 +62,12 @@ void direct_problem(uint n, vector<vec>& u, vector<vec>& u1)
 		mat Kp(n, n, fill::zeros);
 		mat Km(n, n, fill::zeros);
 
-		Kp = (K[i + 1] + K[i + 2]) * 0.5;
-/*
-		try {
-			Kp = (2 * K[i + 1] * K[i + 2]) * inv(K[i + 1] + K[i + 2]);
-		} catch(...) {
-			Kp = (K[i + 1] + K[i + 2]) * 0.5;
-			Kp = (2 * K[i + 1] * K[i + 2]) * pinv(K[i + 1] + K[i + 2]);
-		}
-*/
+		//Kp = (K[i + 1] + K[i + 2]) * 0.5;
+		Kp = (2 * K[i + 1] * K[i + 2]) * inv(K[i + 1] + K[i + 2]);
 
-		Km = (K[i] + K[i + 1]) * 0.5;
-/*
-		try {
-			Km = (2 * K[i] * K[i + 1]) * inv(K[i] + K[i + 1]);
-		} catch (...) {
-			Km = (K[i] + K[i + 1]) * 0.5;
-			Km = (2 * K[i] * K[i + 1]) * pinv(K[i] + K[i + 1]);
-		}
-*/
+		//Km = (K[i] + K[i + 1]) * 0.5;
+		Km = (2 * K[i] * K[i + 1]) * inv(K[i] + K[i + 1]);
+
 		A[i] = Km * (1.0 / h / h);
 		B[i] = Al[i + 1] * (1.0 / t) +
 			Km * (1.0 / h / h) +
