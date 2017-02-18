@@ -84,11 +84,11 @@ void start_cond_con(vector<vec>& C)
 	get_left_edge(left);
 	/* free edge -> close C=0, fixed edge -> pressure C=1 */
 	for (int i = 0; i < n; i++) {
-		C.at(TR_START)(i) = 1; //left(i) ? 0 : 1;
+		C.at(TR_START)(i) = left(i) ? 0 : 1;// 1; //left(i) ? 0 : 1;
 		// cludge due to the 2-nd order schema
 		if (TR_START == 0) {
-			C.at(1)(i) = 1; //left(i) ? 0 : 1;
-			C.at(2)(i) = 1; //left(i) ? 0 : 1;
+			C.at(1)(i) = left(i) ? 0 : 1;// 1; //left(i) ? 0 : 1;
+			C.at(2)(i) = left(i) ? 0 : 1;// 1; //left(i) ? 0 : 1;
 		}
 	}
 };
@@ -112,6 +112,7 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 	vector<vec> c1(L + 1, vec(n, fill::zeros));
 	vector<double> wcpr(time, 0.0);
 	vector<double> wcpt(time, 0.0);
+	vector<double> sum_conc(time, 0.0);
 
 	vector<mat> Al(L, mat(n, n, fill::zeros));
 	get_Al(Al);
@@ -218,10 +219,10 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 
 		// edge conditions for concentration (left)
 		for (int i = 0; i < n; i++) {
-			c1[0](i) = c1[1](i); //left(i) ? 0 : 1;
+			c1[0](i) = left(i) ? 0 : 1; //c1[1](i); //left(i) ? 0 : 1;
 			if (TR_START == 0) {
-				c1[1](i) = 1; //left(i) ? 0 : 1;
-				c1[2](i) = 1; //left(i) ? 0 : 1;
+				c1[1](i) = left(i) ? 0 : 1;// 1; //left(i) ? 0 : 1;
+				c1[2](i) = left(i) ? 0 : 1;// 1; //left(i) ? 0 : 1;
 			}
 		}
 
@@ -233,6 +234,10 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 			c1[L](i) = c1[L - 1](i);
 			// total rate and total product
 			wcpr[dt] += c1[WC_PNT](i) * v[WC_PNT](i);
+
+			// law of save mass
+//			for (int j = 0; j < L + 1; j++)
+//				sum_conc[dt] += c[j](i);
 		}
 		if (dt != 0)
 			wcpt[dt] = wcpt[dt - 1] + wcpr[dt] * t;
@@ -242,10 +247,16 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 			sprintf(buf, "res/data_%06d.vtk", dt);
 			write_to_vtk1(p, buf, n, L);
 
+			sprintf(buf, "res/dvel_%06d.vtk", dt);
+			write_to_vtk1(v, buf, n, L - 3);
+
 			N[0] = L - 3;
 
 			sprintf(buf, "res/conc_%06d.vtk", dt);
 			write_to_vtk2d(c, buf, "concentration", N, hh);
+
+			sprintf(buf, "res/velo_%06d.vtk", dt);
+			write_to_vtk2d(v, buf, "velocity", N, hh);
 		}
 
 		p = p1;
@@ -255,6 +266,8 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 	write_plain_data(wcpr, buf, time);
 	sprintf(buf, "res/wcpt.vtk");
 	write_plain_data(wcpt, buf, time);
+//	sprintf(buf, "res/zsm.vtk");
+//	write_plain_data(sum_conc, buf, time);
 
 }
 

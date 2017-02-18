@@ -101,18 +101,18 @@ static void get_K(vector<mat> &K_arr)
 	K0(0, 7) = 0.00; K0(1, 7) = 0.00; K0(2, 7) = 0.00; K0(3, 7) = 0.00;
 	K0(4, 7) = 0.00; K0(5, 7) = 0.00; K0(6, 7) = 0.00; K0(7, 7) = 68.8;
 
-
+/*
 	for (int i = 0; i < l; i++)
 		K_arr[i] = K * POR;
+*/
 
-/*
 	for (int i = 0; i < l* 0.2; i++)
 		K_arr[i] = K * POR;
 	for (int i = l * 0.2; i < l * 0.8; i++)
 		K_arr[i] = K0 * POR;
 	for (int i = l * 0.8; i < l; i++)
 		K_arr[i] = K * POR;
-*/
+
 }
 
 static void get_D(vector<mat> &D_arr)
@@ -173,19 +173,19 @@ static void get_D(vector<mat> &D_arr)
 
 
 
+/*
 	// * on the exchange rate (may be from 0.1 to 10)
 	for (int i = 0; i < l; i++)
-		D_arr[i] = D * POR * 0.1;
-
-
-/*
-	for (int i = 0; i < l * 0.2; i++)
-		D_arr[i] = D * POR * 0.1;
-	for (int i = l * 0.2; i < l * 0.8; i++)
-		D_arr[i] = D0 * POR * 0.1;
-	for (int i = l * 0.8; i < l; i++)
-		D_arr[i] = D * POR * 0.1;
+		D_arr[i] = D * POR * 10;
 */
+
+	for (int i = 0; i < l * 0.2; i++)
+		D_arr[i] = D * POR * 10;
+	for (int i = l * 0.2; i < l * 0.8; i++)
+		D_arr[i] = D0 * POR * 10;
+	for (int i = l * 0.8; i < l; i++)
+		D_arr[i] = D * POR * 10;
+
 }
 
 
@@ -197,10 +197,10 @@ static void get_left_edge(vec &left)
 
 //	left(0) = 1;
 //	left(1) = 1;
-	left(2) = 1;
-	left(3) = 1;
+//	left(2) = 1;
+//	left(3) = 1;
 //	left(4) = 1;
-	left(5) = 1;
+//	left(5) = 1;
 //	left(6) = 1;
 //	left(7) = 1;
 
@@ -213,10 +213,10 @@ static void get_right_edge(vec &right)
 //	right(1) = 1;
 //	right(2) = 1;
 //	right(3) = 1;
-	right(4) = 1;
+//	right(4) = 1;
 //	right(5) = 1;
-	right(6) = 1;
-	right(7) = 1;
+//	right(6) = 1;
+//	right(7) = 1;
 
 }
 
