@@ -1,8 +1,6 @@
 /*
  * @file solvers.h
- *
  * @brief header of tompson's method of numerical solution
- *
  * @author Anna Subbotina
  *
  */

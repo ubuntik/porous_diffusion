@@ -30,22 +30,20 @@ solvers.cpp/solvers.h
 vtk.cpp/vtk.h
 	Functions for dumping data to files for paraview
 
-lalgebra.cpp/lalgebra.h
-	Not used, now the Armadillo lib is used for matrixes and vectors arithmetic
-
-meso.cpp
-	Old problem for the concentration of a passive admixture
-
 simple_ODE.cpp
 	Comparison with the accurate solution (K = 0)
 
 compare.cpp
 	Comparison with the accurate solution (D = 0)
 
-unit_tests:
-	tests for my lib lalgebra - not used
-	test for solving the system of linear equations: test_lapack
-	test for Thomas numerical method (progonka): due to edge conditions see comments in the solvers.cpp
+parser.py
+	Convert from data.vtk to plot.dat for gnuplot
+
+dopicture.gnu
+	Make picture with Gnuplot
+
+meso.cpp (Needed to rewrite with armadillo) not worked now
+	Old problem for the concentration of a passive admixture (was needed to compare with Ayrat)
 
 HOWTO
 

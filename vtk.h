@@ -1,6 +1,6 @@
 /*
  * @file vtk.h
- *
+ * @brief Functions for dumping data to files for paraview
  * @author Anna Subbotina
  *
  */

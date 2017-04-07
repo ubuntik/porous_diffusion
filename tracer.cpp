@@ -1,6 +1,6 @@
 /*
- * @file main.cpp
- *
+ * @file tracer.cpp
+ * @brief Solving the problem of the concentration of a passive admixture
  * @author Anna Subbotina
  *
  */
@@ -112,7 +112,6 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 	vector<vec> c1(L + 1, vec(n, fill::zeros));
 	vector<double> wcpr(time, 0.0);
 	vector<double> wcpt(time, 0.0);
-	vector<double> sum_conc(time, 0.0);
 
 	vector<mat> Al(L, mat(n, n, fill::zeros));
 	get_Al(Al);
@@ -234,10 +233,6 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 			c1[L](i) = c1[L - 1](i);
 			// total rate and total product
 			wcpr[dt] += c1[WC_PNT](i) * v[WC_PNT](i);
-
-			// law of save mass
-//			for (int j = 0; j < L + 1; j++)
-//				sum_conc[dt] += c[j](i);
 		}
 		if (dt != 0)
 			wcpt[dt] = wcpt[dt - 1] + wcpr[dt] * t;
@@ -266,9 +261,6 @@ void tracer_problem(uint n, vector<vec>& p, vector<vec>& p1)
 	write_plain_data(wcpr, buf, time);
 	sprintf(buf, "res/wcpt.vtk");
 	write_plain_data(wcpt, buf, time);
-//	sprintf(buf, "res/zsm.vtk");
-//	write_plain_data(sum_conc, buf, time);
-
 }
 
 int main(int argc, char **argv)

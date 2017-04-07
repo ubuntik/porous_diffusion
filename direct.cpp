@@ -1,6 +1,6 @@
 /*
- * @file main.cpp
- *
+ * @file direct.cpp
+ * @brief Solving the problem of the single phase isothermal flow transport
  * @author Anna Subbotina
  *
  */

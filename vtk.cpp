@@ -1,6 +1,5 @@
 /*
  * @file vtk.cpp
- *
  * @author Anna Subbotina
  *
  */

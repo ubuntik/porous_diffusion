@@ -1,6 +1,5 @@
 /*
  * @file solvers.cpp
- *
  * @author Anna Subbotina
  *
  */

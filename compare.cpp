@@ -1,6 +1,6 @@
 /*
- * @file main.cpp
- *
+ * @file compare.cpp
+ * @brief Comparison with accurate solution for D = 0
  * @author Anna Subbotina
  *
  */

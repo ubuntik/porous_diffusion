@@ -1,6 +1,8 @@
 /*
- * @file main.cpp
- *
+ * @file meso.cpp
+ * @brief Solving the problem of the concentration of a passive admixture
+ *	Calculate the traces for concentration at the start at every point
+ *	(Was needed to compare with Ayrat)
  * @author Anna Subbotina
  *
  */

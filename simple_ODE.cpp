@@ -1,6 +1,6 @@
 /*
- * @file main.cpp
- *
+ * @file simple_ODE.cpp
+ * @brief Comparison with accurate solution for K = 0
  * @author Anna Subbotina
  *
  */
